@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_spectacular',
     'rest_framework',
+    "rest_framework.authtoken",
     'core',
     'user',
 ]
@@ -125,6 +126,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Setting Auth_User_Model configuration
+AUTH_USER_MODEL = "core.User"
 
 # Drf-spectacular settings
 
