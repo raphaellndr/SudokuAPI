@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework',
     'core',
-    # 'user',
 ]
 
 MIDDLEWARE = [
@@ -125,10 +124,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Setting Auth_User_Model configuration
-
-# AUTH_USER_MODEL = "core.User"
 
 # Drf-spectacular settings
 
