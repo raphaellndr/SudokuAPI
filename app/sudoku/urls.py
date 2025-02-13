@@ -6,8 +6,7 @@ from rest_framework.routers import DefaultRouter
 from sudoku import views
 
 router = DefaultRouter()
-router.register("sudokus", views.SudokusViewSet)
-router.register("tags", views.TagViewSet)
+router.register("sudokus", views.SudokuViewSet)
 
 app_name = "sudoku"
 

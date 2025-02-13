@@ -1,11 +1,13 @@
 """Database models."""
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -51,3 +53,30 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "email"
+
+
+class Sudoku(models.Model):
+    """Sudoku object."""
+
+    class _DifficultyChoices(models.TextChoices):
+        """Sudoku difficulties enum."""
+
+        UNKNOWN = "UNKNOWN", _("Unknown")
+        EASY = "EASY", _("Easy") 
+        MEDIUM = "MEDIUM", _("Medium") 
+        HARD = "HARD", _("Hard") 
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,  # remove every sudoku linked to the user
+    )
+    title = models.CharField(max_length=255)
+    difficulty = models.CharField(
+        max_length=10,
+        choices=_DifficultyChoices.choices,
+        default=_DifficultyChoices.UNKNOWN,
+    )
+    grid = models.CharField(max_length=81, default="." * 81)
+
+    def __str__(self) -> str:
+        return self.title
