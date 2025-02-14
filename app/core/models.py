@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
-    PermissionsMixin
+    PermissionsMixin,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -14,10 +14,7 @@ class UserManager(BaseUserManager):
     """Manager for users."""
 
     def create_user(
-        self,
-        email: str,
-        password: str | None = None,
-        **extra_fields
+        self, email: str, password: str | None = None, **extra_fields
     ) -> AbstractBaseUser:
         """Create, save and return a new user"""
         if not email:
@@ -28,7 +25,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
 
         return user
-    
+
     def create_superuser(self, email: str, password: str) -> "User":
         """Create, save and return a new superuser"""
         if not email:
@@ -40,7 +37,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
 
         return user
-    
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
@@ -62,9 +59,9 @@ class Sudoku(models.Model):
         """Sudoku difficulties enum."""
 
         UNKNOWN = "UNKNOWN", _("Unknown")
-        EASY = "EASY", _("Easy") 
-        MEDIUM = "MEDIUM", _("Medium") 
-        HARD = "HARD", _("Hard") 
+        EASY = "EASY", _("Easy")
+        MEDIUM = "MEDIUM", _("Medium")
+        HARD = "HARD", _("Hard")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

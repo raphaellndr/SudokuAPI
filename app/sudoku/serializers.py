@@ -23,11 +23,11 @@ class SudokuSerializer(serializers.ModelSerializer):
         """Creates and returns a sudoku."""
         sudoku = Sudoku.objects.create(**validated_data)
         return sudoku
-    
+
     def update(self, instance: Sudoku, validated_data: dict[str, Any]) -> Sudoku:
         """Updates and returns a sudoku."""
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        
+
         instance.save()
         return instance

@@ -10,6 +10,4 @@ router.register("sudokus", views.SudokuViewSet)
 
 app_name = "sudoku"
 
-urlpatterns = [
-    path("", include(router.urls))
-]
+urlpatterns = [path("", include(router.urls))]

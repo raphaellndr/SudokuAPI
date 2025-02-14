@@ -176,17 +176,17 @@ class PrivateSudokuAPITests(TestCase):
         easy_sudoku = create_sudoku(user=self.user, difficulty="EASY")
         medium_sudoku = create_sudoku(user=self.user, difficulty="MEDIUM")
 
-        res = self.client.get(SUDOKUS_URL, {'difficulties': 'EASY'})
+        res = self.client.get(SUDOKUS_URL, {"difficulties": "EASY"})
 
         # Filter by only one difficulty
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
-        self.assertEqual(res.data[0]['title'], easy_sudoku.title)
+        self.assertEqual(res.data[0]["title"], easy_sudoku.title)
 
         # Filter by multiple difficulties
-        res = self.client.get(SUDOKUS_URL, {'difficulties': 'EASY,MEDIUM'})
+        res = self.client.get(SUDOKUS_URL, {"difficulties": "EASY,MEDIUM"})
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 2)
-        titles = {sudoku['title'] for sudoku in res.data}
+        titles = {sudoku["title"] for sudoku in res.data}
         self.assertIn(easy_sudoku.title, titles)
         self.assertIn(medium_sudoku.title, titles)
