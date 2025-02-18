@@ -17,7 +17,7 @@ SUDOKUS_URL = reverse("sudoku:sudoku-list")
 
 def create_user(**params: Any) -> AbstractUser:
     """Creates and returns a new user.
-    
+
     :param params: User parameters.
     :return: User object.
     """
@@ -26,7 +26,7 @@ def create_user(**params: Any) -> AbstractUser:
 
 def detail_url(sudoku_id: int) -> str:
     """Creates and returns a sudoku detail URL.
-    
+
     :param sudoku_id: Sudoku ID.
     :return: Sudoku detail URL.
     """
@@ -35,7 +35,7 @@ def detail_url(sudoku_id: int) -> str:
 
 def create_sudoku(user, **params: dict[str, str]) -> Sudoku:
     """Creates and returns a sample sudoku.
-    
+
     :param user: User object.
     :param params: Sudoku parameters.
     :return: Sudoku object.

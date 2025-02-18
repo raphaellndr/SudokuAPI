@@ -1,6 +1,6 @@
 """Serializers for sudokus."""
 
-from typing import Any, TypedDict
+from typing import TypedDict
 from rest_framework import serializers
 
 from core.models import Sudoku
@@ -31,7 +31,7 @@ class SudokuSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: SudokuParams) -> Sudoku:
         """Creates and returns a sudoku.
-        
+
         :param validated_data: Sudoku data.
         :return: Sudoku object.
         """
@@ -40,7 +40,7 @@ class SudokuSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Sudoku, validated_data: SudokuParams) -> Sudoku:
         """Updates and returns a sudoku.
-        
+
         :param instance: Sudoku object.
         :param validated_data: Sudoku data.
         :return: Updated sudoku object.

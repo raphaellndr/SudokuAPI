@@ -17,7 +17,7 @@ ME_URL = reverse("user:me")
 
 def create_user(**params: UserParams) -> AbstractUser:
     """Creates and returns a new user.
-    
+
     :param params: User parameters.
     :return: User object.
     """

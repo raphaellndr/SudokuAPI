@@ -17,7 +17,7 @@ class UserManager(BaseUserManager):
         self, email: str, password: str | None = None, **extra_fields
     ) -> AbstractBaseUser:
         """Creates, saves and returns a new user.
-        
+
         :param email: User email address.
         :param password: User password.
         :param extra_fields: Extra fields to add to the user.
@@ -34,7 +34,7 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email: str, password: str) -> "User":
         """Creates, saves and retursn a new superuser.
-        
+
         :param email: Superuser email address.
         :param password: Superuser password.
         :return: User object with priviledges.

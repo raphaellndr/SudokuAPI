@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: UserParams) -> AbstractUser:
         """Creates and returns a user with encrypted password.
-        
+
         :param validated_data: User data.
         :return: User object.
         """
@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance: User, validated_data: UserParams) -> AbstractUser:
         """Updates and returns user.
-        
+
         :param instance: User object.
         :param validated_data: User data.
         :return: Updated user object.
@@ -64,7 +64,7 @@ class AuthTokenSerializer(serializers.Serializer):
 
     def validate(self, attrs: Any) -> Any:
         """Validates and authenticates the user.
-        
+
         :param attrs: User attributes.
         :return: User attributes.
         """

@@ -31,7 +31,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
     def get_object(self) -> AbstractUser:
         """Retrieves and returns the authenticated user.
-        
+
         :return: User object.
         """
         return self.request.user
