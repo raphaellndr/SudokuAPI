@@ -27,7 +27,7 @@ class SudokuSerializer(serializers.ModelSerializer):
             "difficulty",
             "grid",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["created", "updated", "id"]
 
     def create(self, validated_data: SudokuParams) -> Sudoku:
         """Creates and returns a sudoku.
