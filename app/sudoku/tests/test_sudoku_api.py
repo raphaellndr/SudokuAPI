@@ -74,8 +74,8 @@ class PrivateSudokuAPITests(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
-    def retreive_sudokus(self) -> None:
-        """Tests retreiving a list of sudokus."""
+    def retrieve_sudokus(self) -> None:
+        """Tests retrieving a list of sudokus."""
         create_sudoku(user=self.user)
         create_sudoku(user=self.user)
 
