@@ -8,7 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from app.user.serializers import UserParams
+from user.serializers import UserParams
 
 CREATE_USER_URL = reverse("user:create")
 TOKEN_URL = reverse("user:token")
