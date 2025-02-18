@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third apps
     "drf_spectacular",
     "rest_framework",
     "rest_framework.authtoken",
+    # Local apps
     "core",
     "user",
     "sudoku",
