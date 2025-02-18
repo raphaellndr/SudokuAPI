@@ -1,5 +1,7 @@
 """Views for the sudoku APIs."""
 
+from django.db.models import QuerySet
+
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
@@ -34,7 +36,7 @@ class SudokuViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Sudoku, Sudoku]:
         """Retrieves sudokus for authenticated user, filtered by difficulty."""
         queryset = self.queryset
 

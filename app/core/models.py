@@ -16,7 +16,13 @@ class UserManager(BaseUserManager):
     def create_user(
         self, email: str, password: str | None = None, **extra_fields
     ) -> AbstractBaseUser:
-        """Create, save and return a new user"""
+        """Creates, saves and returns a new user.
+        
+        :param email: User email address.
+        :param password: User password.
+        :param extra_fields: Extra fields to add to the user.
+        :return: User object.
+        """
         if not email:
             raise ValueError("User must have an email address")
 
@@ -27,7 +33,12 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email: str, password: str) -> "User":
-        """Create, save and return a new superuser"""
+        """Creates, saves and retursn a new superuser.
+        
+        :param email: Superuser email address.
+        :param password: Superuser password.
+        :return: User object with priviledges.
+        """
         if not email:
             raise ValueError("Superuser must have an email address")
 

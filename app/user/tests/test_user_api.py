@@ -8,13 +8,19 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
+from app.user.serializers import UserParams
+
 CREATE_USER_URL = reverse("user:create")
 TOKEN_URL = reverse("user:token")
 ME_URL = reverse("user:me")
 
 
-def create_user(**params) -> AbstractUser:
-    """Creates and returns a new user."""
+def create_user(**params: UserParams) -> AbstractUser:
+    """Creates and returns a new user.
+    
+    :param params: User parameters.
+    :return: User object.
+    """
     return get_user_model().objects.create_user(**params)
 
 
@@ -22,6 +28,7 @@ class PublicUserAPITests(TestCase):
     """Tests for the public features of the user API."""
 
     def setUp(self) -> None:
+        """Sets up tests."""
         self.client = APIClient()
 
     def test_create_user_success(self) -> None:

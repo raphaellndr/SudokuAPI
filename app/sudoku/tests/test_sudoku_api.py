@@ -16,17 +16,30 @@ SUDOKUS_URL = reverse("sudoku:sudoku-list")
 
 
 def create_user(**params: Any) -> AbstractUser:
-    """Creates and returns a new user."""
+    """Creates and returns a new user.
+    
+    :param params: User parameters.
+    :return: User object.
+    """
     return get_user_model().objects.create_user(**params)
 
 
 def detail_url(sudoku_id: int) -> str:
-    """Creates and returns a sudoku detail URL."""
+    """Creates and returns a sudoku detail URL.
+    
+    :param sudoku_id: Sudoku ID.
+    :return: Sudoku detail URL.
+    """
     return reverse("sudoku:sudoku-detail", args=[sudoku_id])
 
 
-def create_sudoku(user, **params: Any) -> Sudoku:
-    """Creates and returns a sample sudoku."""
+def create_sudoku(user, **params: dict[str, str]) -> Sudoku:
+    """Creates and returns a sample sudoku.
+    
+    :param user: User object.
+    :param params: Sudoku parameters.
+    :return: Sudoku object.
+    """
     defaults = {
         "title": "Sample sudoku title.",
         "difficulty": "UNKNOWN",
@@ -55,7 +68,7 @@ class PublicSudokuAPITests(TestCase):
 class PrivateSudokuAPITests(TestCase):
     """Tests authenticated API requests."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Sets up tests."""
         self.user = create_user(email="test@example.com", password="test123")
         self.client = APIClient()
@@ -171,7 +184,7 @@ class PrivateSudokuAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Sudoku.objects.filter(id=sudoku.id).exists())
 
-    def test_filter_sudokus_by_difficulties(self):
+    def test_filter_sudokus_by_difficulties(self) -> None:
         """Tests filtering sudokus by difficulties."""
         easy_sudoku = create_sudoku(user=self.user, difficulty="EASY")
         medium_sudoku = create_sudoku(user=self.user, difficulty="MEDIUM")

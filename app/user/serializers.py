@@ -1,27 +1,48 @@
 """Serializers for the user API View."""
 
-from typing import Any
+from typing import Any, TypedDict
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext as _
 
 from rest_framework import serializers
 
+from app.core.models import User
+
+
+class UserParams(TypedDict):
+    """User parameters."""
+
+    email: str
+    password: str
+    name: str
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user object."""
 
     class Meta:
+        """Meta class for the user serializer."""
+
         model = get_user_model()
         fields = ["email", "password", "name"]
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
-    def create(self, validated_data: Any) -> AbstractUser:
-        """Creates and returns a user with encrypted password."""
+    def create(self, validated_data: UserParams) -> AbstractUser:
+        """Creates and returns a user with encrypted password.
+        
+        :param validated_data: User data.
+        :return: User object.
+        """
         return get_user_model().objects.create_user(**validated_data)
 
-    def update(self, instance, validated_data: Any) -> AbstractUser:
-        """Updates and returns user."""
+    def update(self, instance: User, validated_data: UserParams) -> AbstractUser:
+        """Updates and returns user.
+        
+        :param instance: User object.
+        :param validated_data: User data.
+        :return: Updated user object.
+        """
         password = validated_data.pop("password", None)
         user = super().update(instance, validated_data)
 
@@ -42,7 +63,11 @@ class AuthTokenSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs: Any) -> Any:
-        """Validates and authenticates the user."""
+        """Validates and authenticates the user.
+        
+        :param attrs: User attributes.
+        :return: User attributes.
+        """
         email = attrs["email"]
         password = attrs["password"]
         user = authenticate(
