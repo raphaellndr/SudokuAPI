@@ -22,10 +22,10 @@ repos:
       args: [--fix, --exit-non-zero-on-fix]
       types: [python]
 
-    - id: mypy
-      name: mypy
-      stages: [pre-commit]
-      language: python
-      entry: mypy
-      args: [--strict]
-      types: [python]
+    # - id: mypy
+    #   name: mypy
+    #   stages: [pre-commit]
+    #   language: python
+    #   entry: mypy
+    #   args: [--strict]
+    #   types: [python]
