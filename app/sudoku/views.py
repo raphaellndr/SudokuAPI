@@ -21,7 +21,7 @@ from sudoku import serializers
     list=extend_schema(
         parameters=[
             OpenApiParameter(
-                "difficulty",
+                "difficulties",
                 OpenApiTypes.STR,
                 description="Comma separated list of difficulties to filter",
             ),
