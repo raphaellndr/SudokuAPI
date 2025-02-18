@@ -26,6 +26,8 @@ class SudokuSerializer(serializers.ModelSerializer):
             "title",
             "difficulty",
             "grid",
+            "created",
+            "updated",
         ]
         read_only_fields = ["created", "updated", "id"]
 
