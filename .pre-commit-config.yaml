@@ -36,6 +36,6 @@ repos:
       name: django test
       stages: [pre-commit]
       language: python
-      entry: python manage.py test
+      entry: cd app && python manage.py test
       args: ["--parallel", "--noinput"]
       types: [python]

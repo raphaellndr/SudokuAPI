@@ -32,7 +32,7 @@ class PublicUserAPITests(TestCase):
         self.client = APIClient()
 
     def test_create_user_success(self) -> None:
-        """Tests creating a user is successful."""
+        """Tests that creating a user is successful."""
         payload = {
             "email": "test@example.com",
             "password": "testpass123",
@@ -46,7 +46,7 @@ class PublicUserAPITests(TestCase):
         self.assertNotIn("password", res.data)
 
     def test_user_with_email_exists_error(self) -> None:
-        """Tests an error is returned if email already exists when creating a user."""
+        """Tests that an error is returned if email already exists when creating a user."""
         payload = {
             "email": "test@example.com",
             "password": "testpass123",
@@ -59,7 +59,7 @@ class PublicUserAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_password_too_short_error(self) -> None:
-        """Tests an error is returned if password is less than 5 chars."""
+        """Tests that an error is returned if password is less than 5 chars."""
         payload = {
             "email": "test@example.com",
             "password": "1234",
@@ -103,7 +103,7 @@ class PublicUserAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_token_blank_password(self) -> None:
-        """Tests posting a blank password returns an error."""
+        """Tests that posting a blank password returns an error."""
         payload = {
             "email": "test@example.com",
             "password": "",
