@@ -29,3 +29,13 @@ repos:
     #   entry: mypy
     #   args: [--strict]
     #   types: [python]
+
+    # Testing
+
+    - id: django test
+      name: django test
+      stages: [pre-commit]
+      language: python
+      entry: python manage.py test
+      args: ["--parallel", "--noinput"]
+      types: [python]
