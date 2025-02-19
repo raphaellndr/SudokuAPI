@@ -10,7 +10,7 @@ python = "~3.11"
 django = "5.1.6"
 djangorestframework = "3.15.2"
 drf-spectacular = "^0.28.0"
-
+django-cors-headers = "^4.7.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.6"
