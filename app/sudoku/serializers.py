@@ -37,8 +37,7 @@ class SudokuSerializer(serializers.ModelSerializer):
         :param validated_data: Sudoku data.
         :return: Sudoku object.
         """
-        sudoku = Sudoku.objects.create(**validated_data)
-        return sudoku
+        return Sudoku.objects.create(**validated_data)
 
     def update(self, instance: Sudoku, validated_data: SudokuParams) -> Sudoku:
         """Updates and returns a sudoku.
