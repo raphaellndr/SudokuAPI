@@ -1,9 +1,9 @@
 """Serializers for sudokus."""
 
 from typing import TypedDict
-from rest_framework import serializers
 
 from core.models import Sudoku
+from rest_framework import serializers
 
 
 class SudokuParams(TypedDict):
@@ -14,7 +14,7 @@ class SudokuParams(TypedDict):
     grid: str
 
 
-class SudokuSerializer(serializers.ModelSerializer):
+class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
     """Sudoku serializer."""
 
     class Meta:
@@ -26,10 +26,10 @@ class SudokuSerializer(serializers.ModelSerializer):
             "title",
             "difficulty",
             "grid",
-            "created",
-            "updated",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["created", "updated", "id"]
+        read_only_fields = ["created_at", "updated_at", "id"]
 
     def create(self, validated_data: SudokuParams) -> Sudoku:
         """Creates and returns a sudoku.

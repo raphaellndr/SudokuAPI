@@ -1,21 +1,21 @@
 """Tests for the sudoku API."""
 
 from typing import Any
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
-from django.urls import reverse
-
-from rest_framework.test import APIClient
-from rest_framework import status
 
 from core.models import Sudoku
+from core.models import User
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from sudoku.serializers import SudokuSerializer
 
 SUDOKUS_URL = reverse("sudoku:sudoku-list")
 
 
-def create_user(**params: Any) -> AbstractUser:
+def create_user(**params: Any) -> User:
     """Creates and returns a new user.
 
     :param params: User parameters.
@@ -33,7 +33,7 @@ def detail_url(sudoku_id: int) -> str:
     return reverse("sudoku:sudoku-detail", args=[sudoku_id])
 
 
-def create_sudoku(user, **params: dict[str, str]) -> Sudoku:
+def create_sudoku(user: User, **params: Any) -> Sudoku:
     """Creates and returns a sample sudoku.
 
     :param user: User object.
@@ -84,7 +84,7 @@ class PrivateSudokuAPITests(TestCase):
         sudokus = Sudoku.objects.all().order_by("-id")
         serializer = SudokuSerializer(sudokus, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.json(), serializer.json())  # type: ignore
 
     def test_sudoku_list_limited_to_auth_user(self) -> None:
         """Tests list of sudokus is limited to authenticated user."""
@@ -97,7 +97,7 @@ class PrivateSudokuAPITests(TestCase):
         recipes = Sudoku.objects.filter(user=self.user)
         serializer = SudokuSerializer(recipes, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.json(), serializer.data)
 
     def test_create_sudoku(self) -> None:
         """Tests creating a sudoku."""
@@ -110,7 +110,7 @@ class PrivateSudokuAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
-        sudoku = Sudoku.objects.get(id=res.data["id"])
+        sudoku = Sudoku.objects.get(id=res.json()["id"])
         for k, v in payload.items():
             self.assertEqual(getattr(sudoku, k), v)
         self.assertEqual(sudoku.user, self.user)
@@ -193,13 +193,13 @@ class PrivateSudokuAPITests(TestCase):
 
         # Filter by only one difficulty
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 1)
-        self.assertEqual(res.data[0]["title"], easy_sudoku.title)
+        self.assertEqual(len(res.json()), 1)
+        self.assertEqual(res.json()[0]["title"], easy_sudoku.title)
 
         # Filter by multiple difficulties
         res = self.client.get(SUDOKUS_URL, {"difficulties": "EASY,MEDIUM"})
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 2)
-        titles = {sudoku["title"] for sudoku in res.data}
+        self.assertEqual(len(res.json()), 2)
+        titles = {sudoku["title"] for sudoku in res.json()}
         self.assertIn(easy_sudoku.title, titles)
         self.assertIn(medium_sudoku.title, titles)

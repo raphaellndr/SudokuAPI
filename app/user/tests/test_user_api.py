@@ -1,21 +1,20 @@
 """Tests for the user API."""
 
-from django.test import TestCase
+from typing import Any
+
+from core.models import User
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
+from django.test import TestCase
 from django.urls import reverse
-
-from rest_framework.test import APIClient
 from rest_framework import status
-
-from user.serializers import UserParams
+from rest_framework.test import APIClient
 
 CREATE_USER_URL = reverse("user:create")
 TOKEN_URL = reverse("user:token")
 ME_URL = reverse("user:me")
 
 
-def create_user(**params: UserParams) -> AbstractUser:
+def create_user(**params: Any) -> User:
     """Creates and returns a new user.
 
     :param params: User parameters.
@@ -43,7 +42,7 @@ class PublicUserAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         user = get_user_model().objects.get(email=payload["email"])
         self.assertTrue(user.check_password(payload["password"]))
-        self.assertNotIn("password", res.data)
+        self.assertNotIn("password", res.json())
 
     def test_user_with_email_exists_error(self) -> None:
         """Tests that an error is returned if email already exists when creating a user."""
@@ -86,7 +85,7 @@ class PublicUserAPITests(TestCase):
         }
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertIn("token", res.data)
+        self.assertIn("token", res.json())
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_bad_credentials(self) -> None:
@@ -99,7 +98,7 @@ class PublicUserAPITests(TestCase):
         }
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertNotIn("token", res.data)
+        self.assertNotIn("token", res.json())
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_token_blank_password(self) -> None:
@@ -110,7 +109,7 @@ class PublicUserAPITests(TestCase):
         }
         res = self.client.post(TOKEN_URL, payload)
 
-        self.assertNotIn("token", res.data)
+        self.assertNotIn("token", res.json())
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_user_unauthorize(self) -> None:
@@ -137,9 +136,9 @@ class PrivateUserAPITests(TestCase):
         res = self.client.get(ME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            res.data,
+        self.assertDictContainsSubset(
             {"name": self.user.name, "email": self.user.email},
+            res.json(),
         )
 
     def test_post_me_not_allowed(self) -> None:

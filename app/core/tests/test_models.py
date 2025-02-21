@@ -1,16 +1,16 @@
 """Tests for the models of the core app."""
 
-from django.test import TestCase
-from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 
-from core import models
+from core.models import Sudoku
+from core.models import User
 
 
 def _sample_user(
     email: str = "user@example.com",
     password: str = "password123",
-) -> AbstractUser:
+) -> User:
     """Creates a sample user."""
     return get_user_model().objects.create_user(email, password)
 
@@ -60,7 +60,7 @@ class ModelsTests(TestCase):
     def test_create_sudoku(self) -> None:
         """Tests creating a new sudoku."""
         user = _sample_user()
-        sudoku = models.Sudoku.objects.create(
+        sudoku = Sudoku.objects.create(
             user=user,
             title="Sample sudoku",
             difficulty="EASY",

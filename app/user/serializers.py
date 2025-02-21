@@ -1,13 +1,13 @@
 """Serializers for the user API View."""
 
-from typing import Any, TypedDict
-from django.contrib.auth import get_user_model, authenticate
-from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext as _
-
-from rest_framework import serializers
+from typing import Any
+from typing import TypedDict
 
 from core.models import User
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext as _
+from rest_framework import serializers
 
 
 class UserParams(TypedDict):
@@ -18,17 +18,17 @@ class UserParams(TypedDict):
     name: str
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer[User]):
     """Serializer for the user object."""
 
     class Meta:
         """Meta class for the user serializer."""
 
         model = get_user_model()
-        fields = ["email", "password", "name"]
+        fields = ["email", "password", "name", "date_joined"]
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
-    def create(self, validated_data: UserParams) -> AbstractUser:
+    def create(self, validated_data: UserParams) -> User:
         """Creates and returns a user with encrypted password.
 
         :param validated_data: User data.
@@ -36,24 +36,25 @@ class UserSerializer(serializers.ModelSerializer):
         """
         return get_user_model().objects.create_user(**validated_data)
 
-    def update(self, instance: User, validated_data: UserParams) -> AbstractUser:
+    def update(self, instance: User, validated_data: UserParams) -> User:
         """Updates and returns user.
 
         :param instance: User object.
         :param validated_data: User data.
         :return: Updated user object.
         """
-        password = validated_data.pop("password", None)
-        user = super().update(instance, validated_data)
+        validated_data_copy = dict(validated_data)
+        password = validated_data_copy.pop("password", None)
+        user: User = super().update(instance, validated_data_copy)
 
         if password:
-            user.set_password(password)
+            user.set_password(password)  # type: ignore
             user.save()
 
         return user
 
 
-class AuthTokenSerializer(serializers.Serializer):
+class AuthTokenSerializer(serializers.Serializer[User]):
     """Serializer for the user auth token."""
 
     email = serializers.EmailField()

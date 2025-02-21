@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = "django-insecure-nt3xy04jy3%755k$vnt@ru&97fa6p2!cz*#jm9al@d*6@n_^68
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 
 # Application definition
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     # Third apps
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "corsheaders",
     "drf_spectacular",
     # Local apps
@@ -94,7 +96,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-    }
+    },
 }
 
 
@@ -154,4 +156,16 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API to resolve sudokus",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+# JWT settings
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
+    "SIGNING_KEY": SECRET_KEY,
+    "ALGORITHM": "HS256",
 }

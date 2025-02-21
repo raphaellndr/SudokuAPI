@@ -1,3 +1,5 @@
+default_stages: [pre-commit]
+
 repos:
   - repo: local
 
@@ -7,7 +9,6 @@ repos:
 
     - id: ruff format
       name: ruff format
-      stages: [pre-commit]
       language: python
       entry: ruff format
       types: [python]
@@ -16,25 +17,24 @@ repos:
     
     - id: ruff check
       name: ruff check
-      stages: [pre-commit]
       language: python
       entry: ruff check .
       args: [--fix, --exit-non-zero-on-fix]
       types: [python]
 
-    # - id: mypy
-    #   name: mypy
-    #   stages: [pre-commit]
-    #   language: python
-    #   entry: mypy
-    #   args: [--strict]
-    #   types: [python]
+    - id: mypy
+      name: mypy
+      language: python
+      entry: mypy
+      args: [--strict]
+      types: [python]
+      additional_dependencies:
+        - django-stubs
 
     # Testing
 
     - id: django test
       name: django test
-      stages: [pre-commit]
       language: python
       entry: cd app && python manage.py test
       args: ["--parallel", "--noinput"]
