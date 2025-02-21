@@ -204,4 +204,5 @@ ACCOUNT_USERNAME_REQUIRED = False
 REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_HTTPONLY": False,  # required to enable refresh tokens
+    "USER_DETAILS_SERIALIZER": "user.serializers.UserSerializer",
 }

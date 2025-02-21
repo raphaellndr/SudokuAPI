@@ -126,7 +126,7 @@ class PrivateUserAPITests(TestCase):
         self.user = create_user(
             email="test@example.com",
             password="testpass123",
-            name="test name",
+            username="test name",
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -137,7 +137,7 @@ class PrivateUserAPITests(TestCase):
 
         assert res.status_code == status.HTTP_200_OK
         self.assertDictContainsSubset(
-            {"name": self.user.name, "email": self.user.email},
+            {"username": self.user.username, "email": self.user.email},
             res.json(),
         )
 
@@ -149,11 +149,11 @@ class PrivateUserAPITests(TestCase):
 
     def test_update_user_profile(self) -> None:
         """Tests updating the user profile for the authenticated user."""
-        payload = {"name": "Updated name", "password": "newpassword123"}
+        payload = {"username": "Updated name", "password": "newpassword123"}
 
         res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
-        assert self.user.name == payload["name"]
+        assert self.user.username == payload["username"]
         assert self.user.check_password(payload["password"])
         assert res.status_code == status.HTTP_200_OK

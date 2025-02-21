@@ -13,7 +13,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     ordering = ["id"]
 
     # Displayed fields in the users list
-    list_display = ["email", "name", "is_staff", "date_joined"]
+    list_display = ["email", "username", "is_staff", "date_joined"]
 
     # Available fields in the user creation form
     add_fieldsets = (
@@ -25,7 +25,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
                     "email",
                     "password1",
                     "password2",
-                    "name",
+                    "username",
                     "is_active",
                     "is_staff",
                 ),
@@ -36,7 +36,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     # Available fields in the user edit form
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        (_("Personal Info"), {"fields": ("name",)}),
+        (_("Personal Info"), {"fields": ("username",)}),
         (
             _("Permissions"),
             {
@@ -51,7 +51,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     )
 
     # Searching fields in the user list
-    search_fields = ["email", "name"]
+    search_fields = ["email", "username"]
 
     # Fields to filter by user status and activity
     list_filter = ["is_staff", "is_superuser", "is_active"]

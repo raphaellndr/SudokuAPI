@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer[User]):
         """Meta class for the user serializer."""
 
         model = get_user_model()
-        fields = ["email", "password", "name", "date_joined"]
+        fields = ["email", "password", "username", "date_joined"]
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
     def create(self, validated_data: UserParams) -> User:
