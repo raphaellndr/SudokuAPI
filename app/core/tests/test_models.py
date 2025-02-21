@@ -27,8 +27,8 @@ class ModelsTests(TestCase):
             password=password,
         )
 
-        self.assertEqual(user.email, email)
-        self.assertTrue(user.check_password(password))
+        assert user.email == email
+        assert user.check_password(password)
 
     def test_new_user_without_email(self) -> None:
         """Tests that creating a user without an email raises a `ValueError`."""
@@ -45,7 +45,7 @@ class ModelsTests(TestCase):
         ]
         for email, expected in sample_emails:
             user = get_user_model().objects.create_user(email, "sample123")
-            self.assertEqual(user.email, expected)
+            assert user.email == expected
 
     def test_new_superuser(self) -> None:
         """Tests creating a new superuser."""
@@ -54,8 +54,8 @@ class ModelsTests(TestCase):
             "testadmin123",
         )
 
-        self.assertTrue(user.is_superuser)
-        self.assertTrue(user.is_staff)
+        assert user.is_superuser
+        assert user.is_staff
 
     def test_create_sudoku(self) -> None:
         """Tests creating a new sudoku."""
@@ -67,4 +67,4 @@ class ModelsTests(TestCase):
             grid="." * 81,
         )
 
-        self.assertEqual(str(sudoku), sudoku.title)
+        assert str(sudoku) == sudoku.title

@@ -47,8 +47,7 @@ def create_sudoku(user: User, **params: Any) -> Sudoku:
     }
     defaults.update(params)
 
-    sudoku = Sudoku.objects.create(user=user, **defaults)
-    return sudoku
+    return Sudoku.objects.create(user=user, **defaults)
 
 
 class PublicSudokuAPITests(TestCase):
@@ -62,7 +61,7 @@ class PublicSudokuAPITests(TestCase):
         """Tests auth is required to call API."""
         res = self.client.get(SUDOKUS_URL)
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        assert res.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 class PrivateSudokuAPITests(TestCase):
@@ -83,8 +82,8 @@ class PrivateSudokuAPITests(TestCase):
 
         sudokus = Sudoku.objects.all().order_by("-id")
         serializer = SudokuSerializer(sudokus, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.json(), serializer.json())  # type: ignore
+        assert res.status_code == status.HTTP_200_OK
+        assert res.json() == serializer.json()  # type: ignore
 
     def test_sudoku_list_limited_to_auth_user(self) -> None:
         """Tests list of sudokus is limited to authenticated user."""
@@ -96,8 +95,8 @@ class PrivateSudokuAPITests(TestCase):
 
         recipes = Sudoku.objects.filter(user=self.user)
         serializer = SudokuSerializer(recipes, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.json(), serializer.data)
+        assert res.status_code == status.HTTP_200_OK
+        assert res.json() == serializer.data
 
     def test_create_sudoku(self) -> None:
         """Tests creating a sudoku."""
@@ -108,12 +107,12 @@ class PrivateSudokuAPITests(TestCase):
         }
         res = self.client.post(SUDOKUS_URL, payload)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        assert res.status_code == status.HTTP_201_CREATED
 
         sudoku = Sudoku.objects.get(id=res.json()["id"])
         for k, v in payload.items():
-            self.assertEqual(getattr(sudoku, k), v)
-        self.assertEqual(sudoku.user, self.user)
+            assert getattr(sudoku, k) == v
+        assert sudoku.user == self.user
 
     def test_partial_update(self) -> None:
         """Tests a partial update of a sudoku."""
@@ -128,11 +127,11 @@ class PrivateSudokuAPITests(TestCase):
         url = detail_url(sudoku.id)
         res = self.client.patch(url, payload)
 
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        assert res.status_code == status.HTTP_200_OK
         sudoku.refresh_from_db()
-        self.assertEqual(sudoku.title, original_title)
-        self.assertEqual(sudoku.grid, payload["grid"])
-        self.assertEqual(sudoku.user, self.user)
+        assert sudoku.title == original_title
+        assert sudoku.grid == payload["grid"]
+        assert sudoku.user == self.user
 
     def test_full_update(self) -> None:
         """Tests full update of a sudoku."""
@@ -145,11 +144,11 @@ class PrivateSudokuAPITests(TestCase):
         url = detail_url(sudoku.id)
         res = self.client.put(url, payload)
 
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        assert res.status_code == status.HTTP_200_OK
         sudoku.refresh_from_db()
         for k, v in payload.items():
-            self.assertEqual(getattr(sudoku, k), v)
-        self.assertEqual(sudoku.user, self.user)
+            assert getattr(sudoku, k) == v
+        assert sudoku.user == self.user
 
     def test_update_user_returns_error(self) -> None:
         """Tests changing the sudoku's user results in an error."""
@@ -161,7 +160,7 @@ class PrivateSudokuAPITests(TestCase):
         self.client.patch(url, payload)
 
         recipe.refresh_from_db()
-        self.assertEqual(recipe.user, self.user)
+        assert recipe.user == self.user
 
     def test_delete_sudoku(self) -> None:
         """Tests deleting a sudoku is successful."""
@@ -170,8 +169,8 @@ class PrivateSudokuAPITests(TestCase):
         url = detail_url(sudoku.id)
         res = self.client.delete(url)
 
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Sudoku.objects.filter(id=sudoku.id).exists())
+        assert res.status_code == status.HTTP_204_NO_CONTENT
+        assert not Sudoku.objects.filter(id=sudoku.id).exists()
 
     def test_delete_other_users_sudoku_error(self) -> None:
         """Tests trying to delete another user's sudoku gives an error."""
@@ -181,8 +180,8 @@ class PrivateSudokuAPITests(TestCase):
         url = detail_url(sudoku.id)
         res = self.client.delete(url)
 
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertTrue(Sudoku.objects.filter(id=sudoku.id).exists())
+        assert res.status_code == status.HTTP_404_NOT_FOUND
+        assert Sudoku.objects.filter(id=sudoku.id).exists()
 
     def test_filter_sudokus_by_difficulties(self) -> None:
         """Tests filtering sudokus by difficulties."""
@@ -192,14 +191,14 @@ class PrivateSudokuAPITests(TestCase):
         res = self.client.get(SUDOKUS_URL, {"difficulties": "EASY"})
 
         # Filter by only one difficulty
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.json()), 1)
-        self.assertEqual(res.json()[0]["title"], easy_sudoku.title)
+        assert res.status_code == status.HTTP_200_OK
+        assert len(res.json()) == 1
+        assert res.json()[0]["title"] == easy_sudoku.title
 
         # Filter by multiple difficulties
         res = self.client.get(SUDOKUS_URL, {"difficulties": "EASY,MEDIUM"})
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.json()), 2)
+        assert res.status_code == status.HTTP_200_OK
+        assert len(res.json()) == 2
         titles = {sudoku["title"] for sudoku in res.json()}
-        self.assertIn(easy_sudoku.title, titles)
-        self.assertIn(medium_sudoku.title, titles)
+        assert easy_sudoku.title in titles
+        assert medium_sudoku.title in titles
