@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "dj_rest_auth",
     "dj_rest_auth.registration",
     # Local apps
@@ -205,4 +206,19 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_HTTPONLY": False,  # required to enable refresh tokens
     "USER_DETAILS_SERIALIZER": "user.serializers.UserSerializer",
+}
+
+# Socials settings
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": env("GOOGLE_CLIENT_ID"),
+            "secret": env("GOOGLE_SECRET"),
+            "key": "",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+        "VERIFIED_EMAIL": True,
+    }
 }
