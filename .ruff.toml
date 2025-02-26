@@ -1,6 +1,6 @@
 # Ruff configuration (see: https://github.com/cookiecutter/cookiecutter-django)
 
-line-length = 120
+line-length = 100
 indent-width = 4
 target-version = "py311"
 extend-exclude = ["*/migrations/*.py"]
@@ -71,6 +71,3 @@ ignore = [
 extend-unsafe-fixes = [
   "UP038",
 ]
-
-[lint.isort]
-force-single-line = true

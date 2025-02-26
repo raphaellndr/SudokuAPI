@@ -3,9 +3,7 @@
 from typing import Any
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import BaseUserManager
-from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -13,9 +11,16 @@ from django.utils.translation import gettext_lazy as _
 class UserManager(BaseUserManager["User"]):
     """Manager for users."""
 
-    def create_user(self, email: str, password: str | None = None, **extra_fields: Any) -> "User":
+    def create_user(
+        self,
+        username: str,
+        email: str,
+        password: str | None = None,
+        **extra_fields: Any,
+    ) -> "User":
         """Creates, saves and returns a new user.
 
+        :param username: User username.
         :param email: User email address.
         :param password: User password.
         :param extra_fields: Extra fields to add to the user.
@@ -25,15 +30,22 @@ class UserManager(BaseUserManager["User"]):
             raise ValueError(_("User must have an email address"))
 
         normalized_email = self.normalize_email(email)
-        user: User = self.model(email=normalized_email, **extra_fields)
+        user: User = self.model(username=username, email=normalized_email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
 
         return user
 
-    def create_superuser(self, email: str, password: str, **extra_fields: Any) -> "User":
+    def create_superuser(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        **extra_fields: Any,
+    ) -> "User":
         """Creates, saves and returns a new superuser.
 
+        :param username: Superuser username.
         :param email: Superuser email address.
         :param password: Superuser password.
         :param extra_fields: Extra fields to add to the superuser.
@@ -47,14 +59,14 @@ class UserManager(BaseUserManager["User"]):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superuser must have is_superuser=True."))
 
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(username, email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
-    email = models.EmailField(_("email address"), max_length=255, unique=True)
     username = models.CharField(_("username"), max_length=255, blank=True)
+    email = models.EmailField(_("email address"), max_length=255, unique=True)
     date_joined = models.DateTimeField(_("date joined"), auto_now_add=True)
     is_active = models.BooleanField(_("active"), default=True)
     is_staff = models.BooleanField(_("staff status"), default=False)
