@@ -2,8 +2,7 @@
 
 from typing import Any
 
-from core.models import Sudoku
-from core.models import User
+from core.models import Sudoku, User
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse

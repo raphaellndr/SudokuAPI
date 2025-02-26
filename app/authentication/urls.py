@@ -3,14 +3,10 @@
 from typing import Final
 
 from dj_rest_auth.registration.views import RegisterView
-from dj_rest_auth.views import LoginView
-from dj_rest_auth.views import LogoutView
+from dj_rest_auth.views import LoginView, LogoutView
 from django.urls import path
-from django.urls.resolvers import URLPattern
-from django.urls.resolvers import URLResolver
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_simplejwt.views import TokenVerifyView
+from django.urls.resolvers import URLPattern, URLResolver
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from user.views import ManageUserView
 
 from authentication import views

@@ -1,8 +1,7 @@
 """Tests for the Django admin notifications."""
 
 from django.contrib.auth import get_user_model
-from django.test import Client
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 
@@ -13,14 +12,15 @@ class AdminTests(TestCase):
         """Sets up tests by creating a user and a client."""
         self.client = Client()
         self.admin_user = get_user_model().objects.create_superuser(
+            username="admin",
             email="admin@example.com",
             password="aminpassword123",
         )
         self.client.force_login(self.admin_user)
         self.user = get_user_model().objects.create_user(
+            username="Test user",
             email="user@example.com",
             password="userpassword123",
-            username="Test user",
         )
 
     def test_users_listed(self) -> None:

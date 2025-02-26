@@ -3,8 +3,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from core.models import Sudoku
-from core.models import User
+from core.models import Sudoku, User
 
 
 def _sample_user(
@@ -20,9 +19,11 @@ class ModelsTests(TestCase):
 
     def test_new_user_with_email(self) -> None:
         """Tests that creating a new user with an email is successful."""
+        username = "testuser"
         email = "test@example.com"
         password = "password123"
         user = get_user_model().objects.create_user(
+            username=username,
             email=email,
             password=password,
         )
@@ -50,8 +51,9 @@ class ModelsTests(TestCase):
     def test_new_superuser(self) -> None:
         """Tests creating a new superuser."""
         user = get_user_model().objects.create_superuser(
-            "testadmin@example.com",
-            "testadmin123",
+            username="testadmin",
+            email="testadmin@example.com",
+            password="testadmin123",
         )
 
         assert user.is_superuser

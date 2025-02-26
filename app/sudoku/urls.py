@@ -1,9 +1,7 @@
 """URL mappings for the sudoku app."""
 
-from django.urls import include
-from django.urls import path
-from django.urls.resolvers import URLPattern
-from django.urls.resolvers import URLResolver
+from django.urls import include, path
+from django.urls.resolvers import URLPattern, URLResolver
 from rest_framework.routers import DefaultRouter
 
 from sudoku import views
