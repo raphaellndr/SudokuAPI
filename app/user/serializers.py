@@ -3,7 +3,6 @@
 from typing import TypedDict
 
 from core.models import User
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 
@@ -21,8 +20,8 @@ class UserSerializer(serializers.ModelSerializer[User]):
     class Meta:
         """Meta class for the user serializer."""
 
-        model = get_user_model()
-        fields = ["email", "password", "username", "date_joined"]
+        model = User
+        fields = ["email", "password", "username"]
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
     def create(self, validated_data: UserParams) -> User:
@@ -31,7 +30,13 @@ class UserSerializer(serializers.ModelSerializer[User]):
         :param validated_data: User data.
         :return: User object.
         """
-        return get_user_model().objects.create_user(**validated_data)
+        user = User(
+            username=validated_data["username"],
+            email=validated_data["email"],
+        )
+        user.set_password(validated_data["password"])
+        user.save()
+        return user
 
     def update(self, instance: User, validated_data: UserParams) -> User:
         """Updates and returns user.
