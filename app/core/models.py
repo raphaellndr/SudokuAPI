@@ -40,7 +40,7 @@ class UserManager(BaseUserManager["User"]):
         self,
         username: str,
         email: str,
-        password: str,
+        password: str | None = None,
         **extra_fields: Any,
     ) -> "User":
         """Creates, saves and returns a new superuser.
