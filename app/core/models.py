@@ -65,7 +65,7 @@ class UserManager(BaseUserManager["User"]):
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
-    username = models.CharField(_("username"), max_length=255, blank=True)
+    username = models.CharField(_("username"), max_length=255, blank=True, null=True)
     email = models.EmailField(_("email address"), max_length=255, unique=True)
     date_joined = models.DateTimeField(_("date joined"), auto_now_add=True)
     is_active = models.BooleanField(_("active"), default=True)
@@ -93,10 +93,10 @@ class Sudoku(models.Model):
     class _DifficultyChoices(models.TextChoices):
         """Sudoku difficulties enum."""
 
-        UNKNOWN = "UNKNOWN", _("Unknown")
-        EASY = "EASY", _("Easy")
-        MEDIUM = "MEDIUM", _("Medium")
-        HARD = "HARD", _("Hard")
+        UNKNOWN = "Unknown", _("Unknown")
+        EASY = "Easy", _("Easy")
+        MEDIUM = "Medium", _("Medium")
+        HARD = "Hard", _("Hard")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
