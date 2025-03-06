@@ -33,9 +33,8 @@ repos:
 
     # Testing
 
-    - id: django test
-      name: django test
+    - id: django-pytest
+      name: django-pytest
       language: python
-      entry: cd app && python manage.py test
-      args: ["--parallel", "--noinput"]
+      entry: pytest
       types: [python]
