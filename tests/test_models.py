@@ -1,9 +1,8 @@
 """Tests for the models of the core app."""
 
+from core.models import Sudoku, User
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-
-from core.models import Sudoku, User
 
 
 def _sample_user(

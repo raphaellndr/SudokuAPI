@@ -69,7 +69,6 @@ class PublicUserAPITests(TestCase):
         user_exists = get_user_model().objects.filter(email=payload["email"]).exists()
         assert not user_exists
 
-
     def test_retrieve_user_unauthorize(self) -> None:
         """Tests authentification is required for users."""
         res = self.client.get(ME_URL)
