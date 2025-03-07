@@ -13,7 +13,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     ordering = ["id"]
 
     # Displayed fields in the users list
-    list_display = ["email", "username", "is_staff", "date_joined"]
+    list_display = ["email", "username", "is_staff"]
 
     # Available fields in the user creation form
     add_fieldsets = (
@@ -47,7 +47,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("Important dates"), {"fields": ("created_at", "updated_at", "last_login")}),
     )
 
     # Searching fields in the user list
@@ -57,7 +57,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     list_filter = ["is_staff", "is_superuser", "is_active"]
 
     # Fields to display in the user edit form
-    readonly_fields = ["date_joined", "last_login"]
+    readonly_fields = ["created_at", "updated_at", "last_login"]
 
 
 admin.site.register(models.User, UserAdmin)
