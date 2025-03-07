@@ -6,12 +6,6 @@ from rest_framework import generics, permissions
 from user.serializers import UserSerializer
 
 
-class CreateUserView(generics.CreateAPIView[User]):
-    """Creates a new user in the system."""
-
-    serializer_class = UserSerializer
-
-
 class ManageUserView(generics.RetrieveUpdateAPIView[User]):
     """Manage the authenticated user."""
 
