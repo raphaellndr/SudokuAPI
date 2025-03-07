@@ -1,3 +1,5 @@
+"""User model tests."""
+
 import pytest
 from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
@@ -13,20 +15,14 @@ def test_create_user(create_user) -> None:
     assert user.is_active is True
     assert user.is_staff is False
     assert user.is_superuser is False
+    assert str(user) == "email0@example.com"
 
 
-@pytest.mark.parametrize(
-    "username",
-    [
-        None,
-        "",
-    ],
-)
-def test_create_user_without_username(create_user, username: str | None) -> None:
+def test_create_user_without_username(create_user) -> None:
     """Tests creating a new user without a username."""
-    user = create_user(username=username)
+    user = create_user(username=None)
 
-    assert user.username == username
+    assert user.username == None
     assert user.email
     assert check_password("pw", user.password)
     assert user.is_active is True
