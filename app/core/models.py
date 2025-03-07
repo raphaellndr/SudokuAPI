@@ -7,8 +7,10 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .base import TimestampedMixin
 
-class UserManager(BaseUserManager["User"]):
+
+class _UserManager(BaseUserManager["User"]):
     """Manager for users."""
 
     def create_user(
@@ -62,16 +64,15 @@ class UserManager(BaseUserManager["User"]):
         return self.create_user(username, email, password, **extra_fields)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
     """User in the system."""
 
     username = models.CharField(_("username"), max_length=255, blank=True, null=True)
     email = models.EmailField(_("email address"), max_length=255, unique=True)
-    date_joined = models.DateTimeField(_("date joined"), auto_now_add=True)
     is_active = models.BooleanField(_("active"), default=True)
     is_staff = models.BooleanField(_("staff status"), default=False)
 
-    objects = UserManager()
+    objects = _UserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -87,7 +88,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-class Sudoku(models.Model):
+class Sudoku(TimestampedMixin):
     """Sudoku object."""
 
     class _DifficultyChoices(models.TextChoices):
@@ -102,15 +103,14 @@ class Sudoku(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,  # remove every sudoku linked to the user
     )
-    title = models.CharField(max_length=255)
+    title = models.CharField(_("title"), max_length=255)
     difficulty = models.CharField(
+        _("difficulty"),
         max_length=10,
         choices=_DifficultyChoices.choices,
         default=_DifficultyChoices.UNKNOWN,
     )
-    grid = models.CharField(max_length=81, default="." * 81)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    grid = models.CharField(_("grid"), max_length=81, default="." * 81)
 
     def __str__(self) -> str:
         return self.title
