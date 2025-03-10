@@ -24,3 +24,13 @@ def register_user_payload(user_payload) -> Mapping[str, str]:
         "password1": user_payload["password"],
         "password2": user_payload["password"],
     }
+
+
+@pytest.fixture
+def sudoku_payload() -> Mapping[str, str]:
+    """Returns a sudoku payload for testing."""
+    return {
+        "title": "sudoku",
+        "difficulty": "Unknown",
+        "grid": "0" * 81,
+    }
