@@ -71,3 +71,6 @@ ignore = [
 extend-unsafe-fixes = [
   "UP038",
 ]
+
+[lint.flake8-pytest-style]
+parametrize-names-type = "csv"
