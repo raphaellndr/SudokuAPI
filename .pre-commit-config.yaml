@@ -37,4 +37,6 @@ repos:
       name: django-pytest
       language: python
       entry: pytest
+      pass_filenames: false
+      always_run: true
       types: [python]
