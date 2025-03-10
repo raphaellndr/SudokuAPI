@@ -7,15 +7,17 @@ from django.db import IntegrityError
 
 def test_create_user(create_user) -> None:
     """Tests creating a new user."""
-    user = create_user()
+    username = "username"
+    email = "email@example.com"
+    user = create_user(username=username, email=email)
 
-    assert user.username == "username0"
-    assert user.email == "email0@example.com"
+    assert user.username == username
+    assert user.email == email
     assert check_password("pw", user.password)
     assert user.is_active is True
     assert user.is_staff is False
     assert user.is_superuser is False
-    assert str(user) == "email0@example.com"
+    assert str(user) == email
 
 
 def test_create_user_without_username(create_user) -> None:
@@ -55,7 +57,7 @@ def test_create_user_without_password(create_user) -> None:
 
 def test_create_two_users_with_same_email(create_users) -> None:
     """Tests creating two users with the same email.
-    
+
     :raises IntegrityError: cannot create two users with the same email.
     """
     with pytest.raises(IntegrityError):
