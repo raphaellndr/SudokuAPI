@@ -53,6 +53,15 @@ def test_create_user_without_password(create_user) -> None:
     assert user.is_superuser is False
 
 
+def test_create_two_users_with_same_email(create_users) -> None:
+    """Tests creating two users with the same email.
+    
+    :raises IntegrityError: cannot create two users with the same email.
+    """
+    with pytest.raises(IntegrityError):
+        create_users(size=2, email="sameemail@example.com")
+
+
 def test_create_superuser(create_superuser) -> None:
     """Tests creating a new superuser."""
 
