@@ -4,6 +4,7 @@ import pytest
 from core.models import User
 from django.test import Client
 from django.urls import reverse
+from rest_framework import status
 
 
 @pytest.fixture
@@ -21,7 +22,7 @@ def test_user_changelist(set_up_client, create_users) -> None:
 
     url = reverse("admin:core_user_changelist")
     response = admin_client.get(url)
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
     changelist = response.context["cl"]
     assert changelist.result_count == nb_users + 1
@@ -36,7 +37,7 @@ def test_user_add(set_up_client, create_user) -> None:
     url = reverse("admin:core_user_add")
     response = admin_client.get(url)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_user_change(set_up_client, create_user) -> None:
@@ -47,4 +48,4 @@ def test_user_change(set_up_client, create_user) -> None:
     url = reverse("admin:core_user_change", args=[user.id])
     response = admin_client.get(url)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
