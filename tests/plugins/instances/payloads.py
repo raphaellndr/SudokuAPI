@@ -1,6 +1,7 @@
 """Fixtures returning useful payloads."""
 
 from collections.abc import Mapping
+
 import pytest
 
 

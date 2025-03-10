@@ -1,12 +1,12 @@
 """Tests the User views that don't require authentication."""
 
 from typing import Final
+
+import pytest
+from core.models import User
 from django.db import IntegrityError
 from django.urls import reverse
-import pytest
 from rest_framework import status
-
-from core.models import User
 
 REGISTER_USER_URL: Final[str] = reverse("authentication:rest_register")
 TOKEN_OBTAIN_PAIR_URL: Final[str] = reverse("authentication:token_obtain_pair")
@@ -21,7 +21,7 @@ def test_create_user(api_client, register_user_payload) -> None:
     assert response.status_code == status.HTTP_201_CREATED
     user = User.objects.get(**response.data["user"])
     assert user.check_password(register_user_payload["password1"])
-    assert not "password" in response.data["user"]
+    assert "password" not in response.data["user"]
 
 
 def test_create_user_that_exists_fails(api_client, create_user, register_user_payload) -> None:
