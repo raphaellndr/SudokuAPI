@@ -7,7 +7,7 @@ import pytest
 from core.models import User
 
 
-class UserFactory(factory.django.DjangoModelFactory):
+class _UserFactory(factory.django.DjangoModelFactory):
     """User factory."""
 
     class Meta:
@@ -25,7 +25,7 @@ def create_user(transactional_db: None) -> Callable:
     """Pytest fixture for creating a new user."""
 
     def _factory(**kwargs) -> User:
-        return UserFactory(**kwargs)
+        return _UserFactory(**kwargs)
 
     return _factory
 
@@ -35,12 +35,12 @@ def create_users(transactional_db: None) -> Callable:
     """Pytest fixture for creating a batch of new users."""
 
     def _factory(size: int = 10, **kwargs) -> list[User]:
-        return UserFactory.create_batch(size=size, **kwargs)
+        return _UserFactory.create_batch(size=size, **kwargs)
 
     return _factory
 
 
-class SuperUserFactory(UserFactory):
+class _SuperUserFactory(_UserFactory):
     """Superuser factory."""
 
     is_staff = True
@@ -52,6 +52,6 @@ def create_superuser(transactional_db: None) -> Callable:
     """Pytest fixture for creating a new superuser."""
 
     def _factory(**kwargs) -> User:
-        return SuperUserFactory(**kwargs)
+        return _SuperUserFactory(**kwargs)
 
     return _factory
