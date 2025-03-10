@@ -24,7 +24,7 @@ def test_create_user_without_username(create_user) -> None:
     """Tests creating a new user without a username."""
     user = create_user(username=None)
 
-    assert user.username == None
+    assert user.username is None
     assert user.email
     assert check_password("pw", user.password)
     assert user.is_active is True

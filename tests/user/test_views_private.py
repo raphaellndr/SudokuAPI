@@ -14,8 +14,7 @@ USER_DETAILS_URL: Final[str] = reverse("authentication:rest_user_details")
 def authenticated_client(api_client, create_user, user_payload):
     """Sets up a client for authenticated tests."""
     user = create_user(**user_payload)
-    client = api_client(user=user)
-    return client
+    return api_client(user=user)
 
 
 def test_retrieve_profile(authenticated_client, user_payload) -> None:

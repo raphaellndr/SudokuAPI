@@ -4,14 +4,14 @@ from collections.abc import Callable
 
 import factory
 import pytest
-from core.models import Sudoku
+from core.models import Sudoku, User
 
 from .providers import SudokuGridProvider
 
 factory.Faker.add_provider(SudokuGridProvider)
 
 
-class SudokuFactory(factory.django.DjangoModelFactory):
+class _SudokuFactory(factory.django.DjangoModelFactory):
     """Sudoku factory."""
 
     class Meta:
@@ -25,11 +25,26 @@ class SudokuFactory(factory.django.DjangoModelFactory):
 
 
 @pytest.fixture
-def create_sudoku(transactional_db: None, create_user) -> Callable:
+def create_sudokus(transactional_db: None, create_user) -> Callable:
+    """Pytest fixture for creating a batch of new sudokus."""
+
+    def _factory(
+        size: int = 10, user: User | None = None, difficulty: str = "Unknown", **kwargs
+    ) -> Sudoku:
+        if user is None:
+            user = create_user()
+        return _SudokuFactory.create_batch(size=size, user=user, difficulty=difficulty, **kwargs)
+
+    return _factory
+
+
+@pytest.fixture
+def create_sudoku(create_sudokus, create_user) -> Callable:
     """Pytest fixture for creating a new sudoku."""
 
-    def _factory(**kwargs) -> Sudoku:
-        user = create_user()
-        return SudokuFactory(user=user, **kwargs)
+    def _factory(user: User | None = None, difficulty: str = "Unknown", **kwargs) -> Sudoku:
+        if user is None:
+            user = create_user()
+        return create_sudokus(size=1, user=user, difficulty=difficulty, **kwargs)[0]
 
     return _factory

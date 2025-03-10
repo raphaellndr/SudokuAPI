@@ -1,6 +1,6 @@
 """Custom providers."""
 
-import random
+from random import SystemRandom
 
 from faker import providers
 
@@ -10,4 +10,4 @@ class SudokuGridProvider(providers.BaseProvider):
 
     def numeric_grid(self, size=81):
         """Generates a string of numeric characters of the specified size."""
-        return "".join(random.choices("0123456789", k=size))
+        return "".join(SystemRandom.choices("0123456789", k=size))

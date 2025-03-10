@@ -21,7 +21,9 @@ def client() -> Client:
 
 @pytest.fixture
 def api_client(transactional_db) -> APIClient:
-    """Creates an `APIClient` for testing. If a user is specified, authenticates it to the client."""
+    """Creates an `APIClient` for testing. If a user is specified, authenticates it to the
+    client.
+    """
 
     def _factory(user: User | None = None) -> APIClient:
         client = APIClient()
