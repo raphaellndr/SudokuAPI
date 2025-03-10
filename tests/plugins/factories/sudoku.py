@@ -25,7 +25,9 @@ class SudokuFactory(factory.django.DjangoModelFactory):
 
 
 @pytest.fixture
-def create_sudoku(transactional_db, create_user) -> Callable:
+def create_sudoku(transactional_db: None, create_user) -> Callable:
+    """Pytest fixture for creating a new sudoku."""
+
     def _factory(**kwargs) -> Sudoku:
         user = create_user()
         return SudokuFactory(user=user, **kwargs)

@@ -75,7 +75,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
     objects = _UserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["username"]
 
     class Meta:
         """Meta class for the user model."""

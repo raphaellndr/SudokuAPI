@@ -21,9 +21,21 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 
 @pytest.fixture
-def create_user(transactional_db) -> Callable:
+def create_user(transactional_db: None) -> Callable:
+    """Pytest fixture for creating a new user."""
+
     def _factory(**kwargs) -> User:
         return UserFactory(**kwargs)
+
+    return _factory
+
+
+@pytest.fixture
+def create_users(transactional_db: None) -> Callable:
+    """Pytest fixture for creating a batch of new users."""
+
+    def _factory(size: int = 10, **kwargs) -> list[User]:
+        return UserFactory.create_batch(size=size, **kwargs)
 
     return _factory
 
@@ -36,7 +48,9 @@ class SuperUserFactory(UserFactory):
 
 
 @pytest.fixture
-def create_superuser(transactional_db) -> Callable:
+def create_superuser(transactional_db: None) -> Callable:
+    """Pytest fixture for creating a new superuser."""
+
     def _factory(**kwargs) -> User:
         return SuperUserFactory(**kwargs)
 

@@ -1,19 +1,18 @@
-"""APIClient fixtures for testing."""
+"""Client fixture for testing."""
 
 import pytest
-from rest_framework.test import APIClient
+from core.models import User
+from django.test import Client
 
 
 @pytest.fixture
-def unauthenticated_client() -> APIClient:
-    """Creates an unauthenticated client for testing."""
-    return APIClient()
+def client() -> Client:
+    """Creates an `Client` for testing. If a user is specified, authenticates it to the client."""
 
+    def _factory(user: User | None = None) -> Client:
+        client = Client()
+        if user is not None:
+            client.force_login(user=user)
+        return client
 
-@pytest.fixture
-def authenticated_client(transactional_db, create_user) -> APIClient:
-    """Creates an authenticated client for testing."""
-    client = APIClient()
-    user = create_user()
-    client.force_authenticate(user=user)
-    return client
+    return _factory
