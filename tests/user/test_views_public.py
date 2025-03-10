@@ -1,4 +1,4 @@
-"""Tests the User views that don't require authentication."""
+"""Tests User views that don't require authentication."""
 
 from typing import Final
 
