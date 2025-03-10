@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.urls import reverse
 from rest_framework import status
 
+LOGIN_URL: Final[str] = reverse("authentication:rest_login")
 REGISTER_USER_URL: Final[str] = reverse("authentication:rest_register")
 TOKEN_OBTAIN_PAIR_URL: Final[str] = reverse("authentication:token_obtain_pair")
 TOKEN_VERIFY_URL: Final[str] = reverse("authentication:token_verify")
@@ -166,3 +167,18 @@ def test_cannot_retrieve_user_if_unauthenticated(api_client) -> None:
     response = api_client().get(USER_DETAILS_URL)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_user_login(api_client, register_user_payload, user_payload) -> None:
+    """Tests that a user can login successfully."""
+    api_client().post(REGISTER_USER_URL, register_user_payload)
+    response = api_client().post(LOGIN_URL, user_payload)
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_user_cannot_login_if_not_registered(api_client, user_payload) -> None:
+    """Tests that a user cannot login if account does not exist."""
+    response = api_client().post(LOGIN_URL, user_payload)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
