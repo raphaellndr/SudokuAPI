@@ -21,21 +21,21 @@ class _UserFactory(factory.django.DjangoModelFactory):
 
 
 @pytest.fixture
-def create_user(transactional_db: None) -> Callable:
-    """Pytest fixture for creating a new user."""
-
-    def _factory(**kwargs) -> User:
-        return _UserFactory(**kwargs)
-
-    return _factory
-
-
-@pytest.fixture
 def create_users(transactional_db: None) -> Callable:
     """Pytest fixture for creating a batch of new users."""
 
     def _factory(size: int = 10, **kwargs) -> list[User]:
         return _UserFactory.create_batch(size=size, **kwargs)
+
+    return _factory
+
+
+@pytest.fixture
+def create_user(create_users) -> Callable:
+    """Pytest fixture for creating a new user."""
+
+    def _factory(**kwargs) -> User:
+        return create_users(size=1, **kwargs)[0]
 
     return _factory
 
