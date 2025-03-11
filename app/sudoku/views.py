@@ -5,10 +5,18 @@ from django.db.models import QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import BaseSerializer
 
 from sudoku import serializers
+
+
+class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
+    """Custom Pagination for Sudoku viewset."""
+
+    default_limit = 5
+    max_limit = 25
 
 
 @extend_schema_view(
@@ -28,21 +36,17 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
     serializer_class = serializers.SudokuSerializer
     queryset = Sudoku.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = _CustomLimitOffsetPaginatiopn
 
     def get_queryset(self) -> QuerySet[Sudoku]:
         """Retrieves sudokus for authenticated user, filtered by difficulty."""
-        queryset = self.queryset
+        queryset = Sudoku.objects.filter(user=self.request.user)  # type: ignore
 
-        if self.request.user.is_authenticated:
-            user = self.request.user
-            queryset = queryset.filter(user=user)
-
-            difficulties = self.request.query_params.get("difficulties")
-            if difficulties:
-                difficulties_list = difficulties.split(",")
+        difficulties = self.request.query_params.get("difficulties")
+        if difficulties:
+            difficulties_list = [d.strip() for d in difficulties.split(",") if d.strip()]
+            if difficulties_list:
                 queryset = queryset.filter(difficulty__in=difficulties_list)
-        else:
-            queryset = queryset.none()
 
         return queryset.order_by("-id").distinct()
 

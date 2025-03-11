@@ -32,18 +32,42 @@ def test_create_sudoku(set_up, sudoku_payload) -> None:
     assert sudoku.user == user
 
 
-def test_retrieve_sudokus(set_up, create_sudokus) -> None:
+@pytest.mark.parametrize(
+    "limit,offset,expected_count",
+    [
+        (None, None, 5),  # default limit is 5
+        (5, None, 5),  # if not offset, fetches first 5 items (same as default)
+        (10, None, 10),  # if limit is 10, fetches every item
+        (None, 5, 5),  # if no limit and offset is 5, fetches the last 5 items
+        (None, 10, 0),  # if offset if 10, fetches no items since 10 are created
+        (5, 7, 3),  # if offset 7, fetches the last 3 items
+        (None, -3, 5),  # if offset is negative, fetches the first 5 items
+    ],
+)
+def test_retrieve_sudokus(
+    set_up, create_sudokus, limit: int | None, offset: int | None, expected_count: int
+) -> None:
     """Tests that retrieving a list of sudokus is successful for an authenticated user."""
     client, user = set_up
     create_sudokus(user=user)
 
-    response = client.get(SUDOKUS_URL)
+    params: dict[str, int] = {}
+    if limit is not None:
+        params["limit"] = limit
+    if offset is not None:
+        params["offset"] = offset
+
+    response = client.get(SUDOKUS_URL, params)
     assert response.status_code == status.HTTP_200_OK
 
-    sudokus = Sudoku.objects.all().order_by("-id")
-    assert len(sudokus) == 10
-    serializer = SudokuSerializer(sudokus, many=True)
-    assert response.data == serializer.data
+    assert len(response.data["results"]) == expected_count
+    if offset is None or offset < 0:
+        offset = 0
+    expected_sudokus = Sudoku.objects.filter(user=user).order_by("-id")[
+        offset : expected_count + offset
+    ]
+    serializer = SudokuSerializer(expected_sudokus, many=True)
+    assert response.data["results"] == serializer.data
 
 
 def test_sudoku_list_limited_to_auth_user(
@@ -62,7 +86,7 @@ def test_sudoku_list_limited_to_auth_user(
     sudokus = Sudoku.objects.filter(user=user)
     assert len(sudokus) == 1
     serializer = SudokuSerializer(sudokus, many=True)
-    assert response.data == serializer.data
+    assert response.data["results"] == serializer.data
 
 
 def test_partially_update_sudoku(set_up, create_sudoku, sudoku_payload) -> None:
@@ -152,10 +176,10 @@ def test_filter_sudokus_by_difficulties(
 
     assert response.status_code == status.HTTP_200_OK
 
-    fetched_sudokus = response.json()
+    fetched_sudokus = response.data["results"]
     assert len(fetched_sudokus) == nb_sudokus
     if nb_sudokus > 0:
-        for response_data in response.data:
+        for response_data in fetched_sudokus:
             sudoku_id = response_data["id"]
             sudoku = Sudoku.objects.get(id=sudoku_id)
             serializer = SudokuSerializer(sudoku)
