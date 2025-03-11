@@ -21,11 +21,11 @@ class _SudokuFactory(factory.django.DjangoModelFactory):
 
     title = "sudoku title"
     difficulty = factory.Iterator(["Unknown", "Easy", "Medium", "Hard"])
-    grid = factory.Faker("numeric_grid", size=81)
+    grid = factory.Faker("string_grid", size=81)
 
 
 @pytest.fixture
-def create_sudokus(transactional_db: None, create_user) -> Callable:
+def create_sudokus(create_user) -> Callable:
     """Pytest fixture for creating a batch of new sudokus."""
 
     def _factory(
