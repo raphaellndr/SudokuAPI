@@ -8,5 +8,5 @@ def test_create_sudoku(create_sudoku) -> None:
     assert sudoku.user
     assert sudoku.title == "sudoku title"
     assert sudoku.difficulty in ["Unknown", "Easy", "Medium", "Hard"]
-    assert sudoku.grid
+    assert len(sudoku.grid) == 81
     assert str(sudoku) == "sudoku title"
