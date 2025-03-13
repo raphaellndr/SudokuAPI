@@ -112,5 +112,11 @@ class Sudoku(TimestampedMixin):
     )
     grid = models.CharField(_("grid"), max_length=81, default="." * 81)
 
+    class Meta:
+        """Meta class for the sudoku model."""
+
+        verbose_name = "sudoku"
+        verbose_name_plural = "sudokus"
+
     def __str__(self) -> str:
         return self.title
