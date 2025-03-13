@@ -25,7 +25,7 @@ class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
             OpenApiParameter(
                 "difficulties",
                 OpenApiTypes.STR,
-                description="Comma separated list of difficulties to filter",
+                description="Comma separated list of difficulties to sort by",
             ),
         ],
     ),
