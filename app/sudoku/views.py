@@ -1,15 +1,19 @@
 """Views for the sudoku APIs."""
 
-from core.models import Sudoku
 from django.db.models import QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
+from rest_framework.views import APIView
 
-from sudoku import serializers
+from sudoku.serializers import SudokuSerializer
+
+from .models import Sudoku
 
 
 class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
@@ -33,7 +37,7 @@ class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
 class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
     """View to manage sudoku APIs."""
 
-    serializer_class = serializers.SudokuSerializer
+    serializer_class = SudokuSerializer
     queryset = Sudoku.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = _CustomLimitOffsetPaginatiopn
@@ -53,3 +57,23 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
     def perform_create(self, serializer: BaseSerializer[Sudoku]) -> None:
         """Creates new sudoku."""
         serializer.save(user=self.request.user)
+
+
+class SudokuSolveView(APIView):
+    """API view to handle solving Sudoku puzzles and retrieving these results."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, id: int) -> Response:
+        """Retrieve a solved sudoku."""
+        try:
+            sudoku = Sudoku.objects.get(id=id, user=request.user)  # type: ignore
+            serializer = SudokuSerializer(sudoku)
+            return Response(serializer.data, status=200)
+        except Sudoku.DoesNotExist:
+            return Response({"error": "Sudoku not found."}, status=404)
+
+    def post(self, request: Request, id: int) -> Response:
+        """Solve a sudoku puzzle."""
+        # TODO: run task
+        return Response({"status": "Sudoku solving task initiated."})

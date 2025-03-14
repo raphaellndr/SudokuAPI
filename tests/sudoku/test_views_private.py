@@ -3,9 +3,9 @@
 from typing import Final
 
 import pytest
-from core.models import Sudoku
 from django.urls import reverse
 from rest_framework import status
+from sudoku.models import Sudoku
 from sudoku.serializers import SudokuSerializer
 
 SUDOKUS_URL: Final[str] = reverse("sudoku:sudoku-list")

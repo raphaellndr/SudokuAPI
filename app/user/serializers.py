@@ -2,8 +2,9 @@
 
 from typing import TypedDict
 
-from core.models import User
 from rest_framework import serializers
+
+from .models import User
 
 
 class UserParams(TypedDict):
@@ -15,10 +16,10 @@ class UserParams(TypedDict):
 
 
 class UserSerializer(serializers.ModelSerializer[User]):
-    """Serializer for the user object."""
+    """`User` serializer."""
 
     class Meta:
-        """Meta class for the user serializer."""
+        """Meta class for the User serializer."""
 
         model = User
         fields = ["email", "password", "username"]
@@ -28,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer[User]):
         """Creates and returns a user with encrypted password.
 
         :param validated_data: User data.
-        :return: User object.
+        :return: `User` object.
         """
         user = User(
             username=validated_data["username"],
@@ -39,11 +40,11 @@ class UserSerializer(serializers.ModelSerializer[User]):
         return user
 
     def update(self, instance: User, validated_data: UserParams) -> User:
-        """Updates and returns user.
+        """Updates and returns the `User`.
 
-        :param instance: User object.
-        :param validated_data: User data.
-        :return: Updated user object.
+        :param instance: `User` object.
+        :param validated_data: `User` data.
+        :return: Updated `User` object.
         """
         validated_data_copy = dict(validated_data)
         password = validated_data_copy.pop("password", None)

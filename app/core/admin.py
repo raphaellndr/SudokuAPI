@@ -3,8 +3,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-
-from core import models
+from sudoku.models import Sudoku
+from user.models import User
 
 
 class UserAdmin(BaseUserAdmin):  # type: ignore
@@ -60,5 +60,5 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     readonly_fields = ["created_at", "updated_at", "last_login"]
 
 
-admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Sudoku)
+admin.site.register(User, UserAdmin)
+admin.site.register(Sudoku)

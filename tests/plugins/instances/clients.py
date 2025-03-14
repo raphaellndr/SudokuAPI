@@ -1,9 +1,9 @@
 """Clients fixture for testing."""
 
 import pytest
-from core.models import User
 from django.test import Client
 from rest_framework.test import APIClient
+from user.models import User
 
 
 @pytest.fixture

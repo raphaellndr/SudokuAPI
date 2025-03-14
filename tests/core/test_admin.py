@@ -1,10 +1,10 @@
 """Test for the Django admin modifications."""
 
 import pytest
-from core.models import User
 from django.test import Client
 from django.urls import reverse
 from rest_framework import status
+from user.models import User
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def test_user_changelist(set_up_client, create_users) -> None:
     nb_users = 5
     create_users(size=nb_users)
 
-    url = reverse("admin:core_user_changelist")
+    url = reverse("admin:user_user_changelist")
     response = admin_client.get(url)
     assert response.status_code == status.HTTP_200_OK
 
@@ -34,7 +34,7 @@ def test_user_add(set_up_client, create_user) -> None:
     """Tests that the create user page works."""
     admin_client = set_up_client
 
-    url = reverse("admin:core_user_add")
+    url = reverse("admin:user_user_add")
     response = admin_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
@@ -45,7 +45,7 @@ def test_user_change(set_up_client, create_user) -> None:
     admin_client = set_up_client
     user = create_user()
 
-    url = reverse("admin:core_user_change", args=[user.id])
+    url = reverse("admin:user_user_change", args=[user.id])
     response = admin_client.get(url)
 
     assert response.status_code == status.HTTP_200_OK

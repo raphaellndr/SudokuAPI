@@ -1,14 +1,19 @@
 """URL mappings for the sudoku app."""
 
+from typing import Final
+
 from django.urls import include, path
 from django.urls.resolvers import URLPattern, URLResolver
 from rest_framework.routers import DefaultRouter
 
-from sudoku import views
+from .views import SudokuViewSet
 
 router = DefaultRouter()
-router.register("sudokus", views.SudokuViewSet)
+router.register("sudokus", SudokuViewSet)
 
-app_name = "sudoku"
+app_name: Final[str] = "sudoku"
 
-urlpatterns: list[URLResolver | URLPattern] = [path("", include(router.urls))]
+urlpatterns: list[URLResolver | URLPattern] = [
+    path("", include(router.urls)),
+    # path("sudokus/<int:id>/solve/", SudokuSolveView.as_view(), name="solve-sudoku"),
+]
