@@ -1,5 +1,6 @@
 """User models."""
 
+import uuid
 from typing import Any
 
 from core.base import TimestampedMixin
@@ -65,6 +66,12 @@ class _UserManager(BaseUserManager["User"]):
 class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
     """User in the system."""
 
+    id = models.UUIDField(
+        _("sudoku identifier"),
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
     username = models.CharField(_("username"), max_length=255, blank=True, null=True)
     email = models.EmailField(_("email address"), max_length=255, unique=True)
     is_active = models.BooleanField(_("active"), default=True)

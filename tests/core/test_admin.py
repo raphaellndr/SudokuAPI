@@ -27,7 +27,7 @@ def test_user_changelist(set_up_client, create_users) -> None:
     changelist = response.context["cl"]
     assert changelist.result_count == nb_users + 1
     assert changelist.full_result_count == nb_users + 1
-    assert list(changelist.result_list) == list(User.objects.all())
+    assert set(changelist.result_list) == set(User.objects.all())
 
 
 def test_user_add(set_up_client, create_user) -> None:
