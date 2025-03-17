@@ -56,24 +56,4 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
 
     def perform_create(self, serializer: BaseSerializer[Sudoku]) -> None:
         """Creates new sudoku."""
-        serializer.save(user=self.request.user)
-
-
-class SudokuSolveView(APIView):
-    """API view to handle solving Sudoku puzzles and retrieving these results."""
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request, id: int) -> Response:
-        """Retrieve a solved sudoku."""
-        try:
-            sudoku = Sudoku.objects.get(id=id, user=request.user)  # type: ignore
-            serializer = SudokuSerializer(sudoku)
-            return Response(serializer.data, status=200)
-        except Sudoku.DoesNotExist:
-            return Response({"error": "Sudoku not found."}, status=404)
-
-    def post(self, request: Request, id: int) -> Response:
-        """Solve a sudoku puzzle."""
-        # TODO: run task
-        return Response({"status": "Sudoku solving task initiated."})
+        serializer.save(user=self.request.user) 
