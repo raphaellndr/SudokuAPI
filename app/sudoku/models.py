@@ -45,4 +45,4 @@ class Sudoku(TimestampedMixin):
         verbose_name_plural = "sudokus"
 
     def __str__(self) -> str:
-        return self.title
+        return f"Sudoku {self.id} - Status: {self.status}"
