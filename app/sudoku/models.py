@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .choices import SudokuDifficultyChoices
+from .choices import SudokuDifficultyChoices, SudokuStatusChoices
 
 
 class Sudoku(TimestampedMixin):
@@ -31,6 +31,12 @@ class Sudoku(TimestampedMixin):
         default=SudokuDifficultyChoices.UNKNOWN,
     )
     grid = models.CharField(_("grid"), max_length=81, default="." * 81)
+    status = models.CharField(
+        _("status"),
+        max_length=SudokuStatusChoices.max_length,
+        choices=SudokuStatusChoices.choices,
+        default=SudokuStatusChoices.PENDING,
+    )
 
     class Meta:
         """Meta class for the sudoku model."""

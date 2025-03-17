@@ -22,3 +22,16 @@ class SudokuDifficultyChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
     EASY = "Easy", _("Easy")
     MEDIUM = "Medium", _("Medium")
     HARD = "Hard", _("Hard")
+
+
+class SudokuStatusChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
+    """Sudoku statuses enum."""
+
+    PENDING = "Pending", _("Pending")
+    RUNNING = "Running", _("Running")
+    COMPLETED = "Completed", _("Completed")
+    FAILED = "Failed", _("Failed")
+    ABORTED = "Aborted", _("Aborted")
+
+
+__all__ = ["SudokuDifficultyChoices", "SudokuStatusChoices"]
