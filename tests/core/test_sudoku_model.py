@@ -11,5 +11,5 @@ def test_create_sudoku(create_sudoku) -> None:
     assert sudoku.title == "sudoku title"
     assert sudoku.difficulty in SudokuDifficultyChoices.values
     assert len(sudoku.grid) == 81
-    assert sudoku.status in SudokuStatusChoices.PENDING
+    assert sudoku.status in SudokuStatusChoices.CREATED
     assert str(sudoku) == "sudoku title"

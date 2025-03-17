@@ -35,7 +35,7 @@ class Sudoku(TimestampedMixin):
         _("status"),
         max_length=SudokuStatusChoices.max_length,
         choices=SudokuStatusChoices.choices,
-        default=SudokuStatusChoices.PENDING,
+        default=SudokuStatusChoices.CREATED,
     )
 
     class Meta:

@@ -27,6 +27,7 @@ class SudokuDifficultyChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
 class SudokuStatusChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
     """Sudoku statuses enum."""
 
+    CREATED = "Created", _("Created")
     PENDING = "Pending", _("Pending")
     RUNNING = "Running", _("Running")
     COMPLETED = "Completed", _("Completed")
