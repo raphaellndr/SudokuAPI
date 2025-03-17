@@ -11,7 +11,7 @@ from .choices import SudokuDifficultyChoices, SudokuStatusChoices
 
 
 class Sudoku(TimestampedMixin):
-    """Sudoku object."""
+    """Model to store sudoku puzzles and their solutions."""
 
     id = models.UUIDField(
         _("sudoku identifier"),

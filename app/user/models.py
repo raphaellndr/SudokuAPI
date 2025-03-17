@@ -64,7 +64,7 @@ class _UserManager(BaseUserManager["User"]):
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
-    """User in the system."""
+    """Model to store users and their information."""
 
     id = models.UUIDField(
         _("sudoku identifier"),
