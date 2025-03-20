@@ -19,3 +19,6 @@ class ManageUserView(generics.RetrieveUpdateAPIView[User]):
         :return: User.
         """
         return self.request.user  # type: ignore
+    
+
+__all__ = ["ManageUserView"]

@@ -7,7 +7,7 @@ from rest_framework import serializers
 from .models import User
 
 
-class UserParams(TypedDict):
+class _UserParams(TypedDict):
     """User parameters."""
 
     username: str
@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer[User]):
         fields = ["email", "password", "username"]
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
-    def create(self, validated_data: UserParams) -> User:
+    def create(self, validated_data: _UserParams) -> User:
         """Creates and returns a user with encrypted password.
 
         :param validated_data: User data.
@@ -39,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer[User]):
         user.save()
         return user
 
-    def update(self, instance: User, validated_data: UserParams) -> User:
+    def update(self, instance: User, validated_data: _UserParams) -> User:
         """Updates and returns the `User`.
 
         :param instance: `User` object.
@@ -55,3 +55,6 @@ class UserSerializer(serializers.ModelSerializer[User]):
             user.save()
 
         return user
+    
+
+__all__ = ["UserSerializer"]

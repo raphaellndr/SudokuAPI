@@ -91,3 +91,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
     def __str__(self) -> str:
         """String representation of the user."""
         return self.email
+
+
+__all__ = ["User"]

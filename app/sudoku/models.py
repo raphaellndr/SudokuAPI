@@ -60,3 +60,6 @@ class Sudoku(TimestampedMixin):
 
     def __str__(self) -> str:
         return f"Sudoku {self.id} - Status: {self.status}"
+    
+
+__all__ = ["Sudoku"]

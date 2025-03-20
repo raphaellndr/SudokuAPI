@@ -58,6 +58,3 @@ class WorkerSettings:
     functions = [solve_sudoku]
     allow_abort_jobs = True
     redis_settings = REDIS_SETTINGS
-
-
-__all__ = ["solve_sudoku"]
