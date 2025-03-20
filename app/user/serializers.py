@@ -55,6 +55,6 @@ class UserSerializer(serializers.ModelSerializer[User]):
             user.save()
 
         return user
-    
+
 
 __all__ = ["UserSerializer"]
