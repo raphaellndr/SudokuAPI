@@ -4,7 +4,7 @@ from typing import TypedDict
 
 from rest_framework import serializers
 
-from .models import Sudoku
+from .models import Sudoku, SudokuSolution
 
 
 class _SudokuParams(TypedDict):
@@ -55,29 +55,23 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
         return instance
 
 
-class SudokuSolutionSerializer(serializers.ModelSerializer[Sudoku]):
+class SudokuSolutionSerializer(serializers.ModelSerializer[SudokuSolution]):
     """Solved sudokus serializer."""
 
     class Meta:
         """Meta class for the `SudokuSolution` serializer."""
 
-        model = Sudoku
+        model = SudokuSolution
         fields = [
             "id",
-            "title",
-            "difficulty",
             "grid",
-            "status",
             "solution",
             "created_at",
             "updated_at",
         ]
         read_only_fields = [
             "id",
-            "title",
-            "difficulty",
             "grid",
-            "status",
             "solution",
             "created_at",
             "updated_at",

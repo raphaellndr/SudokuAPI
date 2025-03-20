@@ -22,6 +22,8 @@ class Sudoku(TimestampedMixin):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name="created_sudokus",
+        verbose_name=_("creator"),
     )
     title = models.CharField(
         _("title"),
@@ -30,20 +32,13 @@ class Sudoku(TimestampedMixin):
     difficulty = models.CharField(
         _("difficulty"),
         max_length=SudokuDifficultyChoices.max_length,
-        choices=SudokuDifficultyChoices.values,
+        choices=SudokuDifficultyChoices.choices,
         default=SudokuDifficultyChoices.UNKNOWN,
     )
     grid = models.CharField(
         _("grid"),
         max_length=81,
-        default="." * 81,
-    )
-    # TODO: créer un modèle SudokuSolution avec solution et statut
-    solution = models.CharField(
-        _("solution"),
-        max_length=81,
-        blank=True,
-        null=True,
+        default="0" * 81,
     )
     status = models.CharField(
         _("status"),
@@ -60,6 +55,32 @@ class Sudoku(TimestampedMixin):
 
     def __str__(self) -> str:
         return f"Sudoku {self.id} - Status: {self.status}"
-    
 
-__all__ = ["Sudoku"]
+
+class SudokuSolution(TimestampedMixin):
+    """Model to store Sudoku solutions."""
+
+    id = models.UUIDField(
+        _("sudoku solution identifier"),
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    sudoku = models.OneToOneField(
+        Sudoku,
+        on_delete=models.CASCADE,
+        related_name="solution",
+        verbose_name=_("sudoku"),
+    )
+    grid = models.CharField(
+        _("solution grid"),
+        max_length=81,
+        blank=True,
+        null=True,
+    )
+
+    def __str__(self) -> str:
+        return f"Solution for Sudoku {self.sudoku.id}"
+
+
+__all__ = ["Sudoku", "SudokuSolution"]

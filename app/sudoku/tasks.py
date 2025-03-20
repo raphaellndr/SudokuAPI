@@ -10,7 +10,7 @@ from asgiref.sync import sync_to_async
 
 from .choices import SudokuStatusChoices
 from .config import REDIS_SETTINGS
-from .models import Sudoku
+from .models import Sudoku, SudokuSolution
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 django.setup()
@@ -21,7 +21,9 @@ def _update_sudoku_status(sudoku_id: str, status: SudokuStatusChoices) -> None:
     Sudoku.objects.filter(id=sudoku_id).update(status=status)
 
 
-def _update_sudoku_solution(sudoku_id: str, solution: str, status: SudokuStatusChoices) -> None:
+def _update_sudoku_solution(
+    sudoku_id: str, solution: SudokuSolution, status: SudokuStatusChoices
+) -> None:
     """Updates the solution and status of a Sudoku."""
     Sudoku.objects.filter(id=sudoku_id).update(solution=solution, status=status)
 
@@ -39,16 +41,26 @@ async def solve_sudoku(ctx: Any, sudoku_id: str) -> dict[str, Any]:
 
     try:
         grid = copy(sudoku.grid)
-        solution = copy(grid)
 
         # TODO: replace with sudoku solving logic
         await asyncio.sleep(10)
+        solution_grid = copy(grid)
 
-        await sync_to_async(_update_sudoku_solution)(sudoku_id, SudokuStatusChoices.COMPLETED)
+        solution = await sync_to_async(SudokuSolution.objects.create)(
+            sudoku=sudoku, grid=solution_grid
+        )
+        await sync_to_async(_update_sudoku_solution)(
+            sudoku_id,
+            solution,
+            SudokuStatusChoices.COMPLETED,  # type: ignore
+        )
         return {"status": "completed", "solution": solution}
 
     except Exception as e:
-        await sync_to_async(_update_sudoku_status)(sudoku_id, SudokuStatusChoices.FAILED)
+        await sync_to_async(_update_sudoku_status)(
+            sudoku_id,
+            SudokuStatusChoices.FAILED,  # type: ignore
+        )
         return {"status": "failed", "error": str(e)}
 
 

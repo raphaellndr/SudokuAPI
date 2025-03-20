@@ -2,13 +2,14 @@
 
 from typing import Final
 
-from authentication import views
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView, LogoutView
 from django.urls import path
 from django.urls.resolvers import URLPattern, URLResolver
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from user.views import ManageUserView
+
+from authentication import views
 
 app_name: Final[str] = "authentication"
 
