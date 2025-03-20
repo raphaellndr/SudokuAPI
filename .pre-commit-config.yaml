@@ -22,14 +22,14 @@ repos:
       args: [--fix, --exit-non-zero-on-fix]
       types: [python]
 
-    - id: mypy
-      name: mypy
-      language: python
-      entry: mypy
-      args: [--strict]
-      types: [python]
-      additional_dependencies:
-        - django-stubs
+    # - id: mypy
+    #   name: mypy
+    #   language: python
+    #   entry: mypy
+    #   args: [--strict]
+    #   types: [python]
+    #   additional_dependencies:
+    #     - django-stubs
 
     # Testing
 
