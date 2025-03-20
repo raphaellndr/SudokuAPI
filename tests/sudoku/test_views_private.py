@@ -23,15 +23,6 @@ def solution_url(sudoku_id: UUID) -> str:
     return reverse("sudoku:sudoku-solution", kwargs={"pk": sudoku_id})
 
 
-def abort_url(sudoku_id: UUID) -> str:
-    """Returns the URL for aborting a sudoku solving task.
-
-    :param sudoku_id: The id of the Sudoku.
-    :return: The URL for aborting the sudoku solving task.
-    """
-    return reverse("sudoku:sudoku-abort", kwargs={"pk": sudoku_id})
-
-
 @pytest.fixture
 def set_up(api_client, create_user, user_payload):
     """Sets up a client for authenticated tests."""
@@ -288,8 +279,8 @@ def test_abort_sudoku_solver_task(
     mock_abort_job = MagicMock(return_value=True)
     monkeypatch.setattr("sudoku.views._abort_job", mock_abort_job)
 
-    url = abort_url(sudoku_id)
-    abort_response = client.post(url)
+    url = solution_url(sudoku_id)
+    abort_response = client.delete(url)
 
     assert abort_response.status_code == response_status
 

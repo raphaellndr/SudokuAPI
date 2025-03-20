@@ -131,7 +131,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"])  # TODO: passer en DELETE sur solution/
+    @action(detail=True, methods=["delete"], url_path="solution", url_name="solution")
     def abort(self, request: Request, pk: UUID | None = None) -> Response:
         """Aborts a running sudoku solver task."""
         sudoku = self.get_object()
