@@ -15,5 +15,4 @@ app_name: Final[str] = "sudoku"
 
 urlpatterns: list[URLResolver | URLPattern] = [
     path("", include(router.urls)),
-    # path("sudokus/<int:id>/solve/", SudokuSolveView.as_view(), name="solve-sudoku"),
 ]

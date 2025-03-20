@@ -7,7 +7,7 @@ from rest_framework import serializers
 from .models import Sudoku
 
 
-class SudokuParams(TypedDict):
+class _SudokuParams(TypedDict):
     """Sudoku parameters."""
 
     title: str
@@ -27,12 +27,13 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
             "title",
             "difficulty",
             "grid",
+            "status",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["created_at", "updated_at", "id"]
+        read_only_fields = ["id", "status", "created_at", "updated_at"]
 
-    def create(self, validated_data: SudokuParams) -> Sudoku:
+    def create(self, validated_data: _SudokuParams) -> Sudoku:
         """Creates and returns a `Sudoku`.
 
         :param validated_data: Sudoku data.
@@ -40,7 +41,7 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
         """
         return Sudoku.objects.create(**validated_data)
 
-    def update(self, instance: Sudoku, validated_data: SudokuParams) -> Sudoku:
+    def update(self, instance: Sudoku, validated_data: _SudokuParams) -> Sudoku:
         """Updates and returns a `Sudoku`.
 
         :param instance: `Sudoku` object.
@@ -52,3 +53,35 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
 
         instance.save()
         return instance
+
+
+class SudokuSolutionSerializer(serializers.ModelSerializer[Sudoku]):
+    """Solved sudokus serializer."""
+
+    class Meta:
+        """Meta class for the `SudokuSolution` serializer."""
+
+        model = Sudoku
+        fields = [
+            "id",
+            "title",
+            "difficulty",
+            "grid",
+            "status",
+            "solution",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "title",
+            "difficulty",
+            "grid",
+            "status",
+            "solution",
+            "created_at",
+            "updated_at",
+        ]
+
+
+__all__ = ["SudokuSerializer", "SudokuSolutionSerializer"]
