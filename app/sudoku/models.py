@@ -4,6 +4,7 @@ import uuid
 
 from core.base import TimestampedMixin
 from django.conf import settings
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -39,6 +40,7 @@ class Sudoku(TimestampedMixin):
         _("grid"),
         max_length=81,
         default="0" * 81,
+        validators=[MinLengthValidator(limit_value=81)],
     )
     status = models.CharField(
         _("status"),
@@ -75,6 +77,7 @@ class SudokuSolution(TimestampedMixin):
     grid = models.CharField(
         _("solution grid"),
         max_length=81,
+        validators=[MinLengthValidator(limit_value=81)],
         blank=True,
         null=True,
     )
