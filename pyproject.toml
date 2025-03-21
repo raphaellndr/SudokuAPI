@@ -19,6 +19,7 @@ cryptography = "44.0.1"
 arq = "0.26.3"
 asgiref = "3.8.1"
 loguru = "0.7.3"
+sudoku = {git = "https://github.com/raphaellndr/SudokuSolver.git"}
 
 [tool.poetry.group.dev]
 optional = true

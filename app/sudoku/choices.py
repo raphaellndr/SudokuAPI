@@ -33,6 +33,7 @@ class SudokuStatusChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
     COMPLETED = "Completed", _("Completed")
     FAILED = "Failed", _("Failed")
     ABORTED = "Aborted", _("Aborted")
+    INVALID = "Invalid", _("Invalid")
 
 
 __all__ = ["SudokuDifficultyChoices", "SudokuStatusChoices"]

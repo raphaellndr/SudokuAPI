@@ -1,11 +1,12 @@
 """Sudoku related tasks."""
 
-import asyncio
 import os
 from copy import copy
 from typing import Any
 
 import django
+from sudoku.sudoku import Sudoku as SudokuSolver
+from sudoku.exceptions import ConsistencyError
 from asgiref.sync import sync_to_async
 
 from .choices import SudokuStatusChoices
@@ -41,9 +42,18 @@ async def solve_sudoku(ctx: Any, sudoku_id: str) -> dict[str, Any]:
 
     try:
         grid = copy(sudoku.grid)
+        sudoku_solver = SudokuSolver(grid)
+        sudoku_solver.solve()
 
-        # TODO: replace with sudoku solving logic
-        await asyncio.sleep(10)
+        try:
+            sudoku_solver.check_consistency()
+        except ConsistencyError:
+            await sync_to_async(_update_sudoku_status)(
+                sudoku_id,
+                SudokuStatusChoices.INVALID,  # type: ignore
+            )
+            return {"status": "failed", "error": "Inconsitent Sudoku solution"}
+
         solution_grid = copy(grid)
 
         solution = await sync_to_async(SudokuSolution.objects.create)(
