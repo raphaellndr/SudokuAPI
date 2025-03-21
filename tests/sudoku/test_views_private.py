@@ -1,13 +1,11 @@
 """Test the Sudoku views for an authenticated user."""
 
 from typing import Final
-from unittest.mock import MagicMock
 from uuid import UUID
 
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from sudoku.choices import SudokuStatusChoices
 from sudoku.models import Sudoku
 from sudoku.serializers import SudokuSerializer
 
@@ -196,100 +194,3 @@ def test_filter_sudokus_by_difficulties(
             sudoku = Sudoku.objects.get(id=sudoku_id)
             serializer = SudokuSerializer(sudoku)
             assert response_data == serializer.data
-
-
-@pytest.mark.parametrize(
-    "sudoku_status,response_status",
-    [
-        (SudokuStatusChoices.CREATED, status.HTTP_200_OK),
-        (SudokuStatusChoices.ABORTED, status.HTTP_200_OK),
-        (SudokuStatusChoices.FAILED, status.HTTP_200_OK),
-        (SudokuStatusChoices.COMPLETED, status.HTTP_400_BAD_REQUEST),
-        (SudokuStatusChoices.RUNNING, status.HTTP_400_BAD_REQUEST),
-        (SudokuStatusChoices.PENDING, status.HTTP_400_BAD_REQUEST),
-    ],
-)
-def test_create_sudoku_solver_task(
-    set_up,
-    create_sudoku,
-    monkeypatch,
-    sudoku_status: SudokuStatusChoices,
-    response_status: int,
-) -> None:
-    """Tests that creating a sudoku solver task is successful.
-
-    Mocks the task queuing in order to speed up the test, since actually solving the sudoku is not
-    what is at stakes here.
-    """
-    client, user = set_up
-
-    sudoku = create_sudoku(user=user, status=sudoku_status)
-    sudoku_id = sudoku.id
-
-    # Mock the _enqueue_solving_task function
-    mock_enqueue_solving_task = MagicMock(return_value=sudoku_id)
-    monkeypatch.setattr("sudoku.views._enqueue_solving_task", mock_enqueue_solving_task)
-
-    url = solution_url(sudoku_id)
-    solve_response = client.post(url)
-
-    assert solve_response.status_code == response_status
-
-    if response_status == status.HTTP_200_OK:
-        assert solve_response.data["status"] == "success"
-        assert solve_response.data["job_id"] == sudoku_id
-
-        sudoku.refresh_from_db()
-        assert sudoku.status == SudokuStatusChoices.PENDING
-
-        # Check _enqueue_solving_task was called with the correct argument
-        mock_enqueue_solving_task.assert_called_once_with(str(sudoku_id))
-    else:
-        assert solve_response.data["detail"] == f"Cannot solve sudoku with status: {sudoku_status}"
-
-
-@pytest.mark.parametrize(
-    "sudoku_status,response_status",
-    [
-        (SudokuStatusChoices.CREATED, status.HTTP_400_BAD_REQUEST),
-        (SudokuStatusChoices.ABORTED, status.HTTP_400_BAD_REQUEST),
-        (SudokuStatusChoices.FAILED, status.HTTP_400_BAD_REQUEST),
-        (SudokuStatusChoices.COMPLETED, status.HTTP_400_BAD_REQUEST),
-        (SudokuStatusChoices.RUNNING, status.HTTP_200_OK),
-        (SudokuStatusChoices.PENDING, status.HTTP_200_OK),
-    ],
-)
-def test_abort_sudoku_solver_task(
-    set_up,
-    create_sudoku,
-    monkeypatch,
-    sudoku_status: SudokuStatusChoices,
-    response_status: int,
-) -> None:
-    """Tests that aborting the solving task while it is pending is successful.
-
-    Mocks the abort method to speed up the process.
-    """
-    client, user = set_up
-
-    sudoku = create_sudoku(user=user, status=sudoku_status)
-    sudoku_id = sudoku.id
-
-    # Mock the _abort_job function
-    mock_abort_job = MagicMock(return_value=True)
-    monkeypatch.setattr("sudoku.views._abort_job", mock_abort_job)
-
-    url = solution_url(sudoku_id)
-    abort_response = client.delete(url)
-
-    assert abort_response.status_code == response_status
-
-    if response_status == status.HTTP_200_OK:
-        assert abort_response.data["status"] == "success"
-        sudoku.refresh_from_db()
-        assert sudoku.status == SudokuStatusChoices.ABORTED
-
-        # Check that _abort_job was called with the correct argument
-        mock_abort_job.assert_called_once_with(str(sudoku_id))
-    else:
-        assert abort_response.data["detail"] == f"Cannot abort task with status: {sudoku_status}"

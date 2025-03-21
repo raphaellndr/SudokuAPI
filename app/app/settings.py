@@ -160,14 +160,17 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
 # Setting Auth_User_Model configuration
 
 AUTH_USER_MODEL = "user.User"
+
 
 # Drf-spectacular settings
 
@@ -185,6 +188,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+
 # JWT settings
 
 SIMPLE_JWT = {
@@ -197,9 +201,11 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
 }
 
+
 # Django sites settings
 
 SITE_ID = 1
+
 
 # Allauth settings
 
@@ -209,6 +215,7 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 
+
 # Dj-rest-auth settings
 
 REST_AUTH = {
@@ -216,6 +223,7 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,  # required to enable refresh tokens
     "USER_DETAILS_SERIALIZER": "user.serializers.UserSerializer",
 }
+
 
 # Socials settings
 
@@ -231,3 +239,9 @@ SOCIALACCOUNT_PROVIDERS = {
         "VERIFIED_EMAIL": True,
     }
 }
+
+
+# Celery settings
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"

@@ -48,6 +48,7 @@ class Sudoku(TimestampedMixin):
         choices=SudokuStatusChoices.choices,
         default=SudokuStatusChoices.CREATED,
     )
+    task_id = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         """Meta class for the sudoku model."""

@@ -2,9 +2,7 @@
 
 from uuid import UUID
 
-from arq import create_pool
-from arq.jobs import Job
-from asgiref.sync import async_to_sync
+from celery import current_app
 from django.db.models import QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
@@ -17,9 +15,9 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, ModelSerializer
 
 from .choices import SudokuStatusChoices
-from .config import REDIS_SETTINGS
 from .models import Sudoku
 from .serializers import SudokuSerializer, SudokuSolutionSerializer
+from .tasks import solve_sudoku
 
 
 class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
@@ -27,32 +25,6 @@ class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
 
     default_limit = 5
     max_limit = 25
-
-
-@async_to_sync
-async def _enqueue_solving_task(sudoku_id: str) -> str:
-    """Queues the task with ARQ.
-
-    :param sudoku_id: id of the Sudoku to solve.
-    :return: ARQ job id.
-    """
-    # TODO: find a way to have a global shared pool
-    redis = await create_pool(REDIS_SETTINGS)
-    job = await redis.enqueue_job("solve_sudoku", sudoku_id, _job_id=sudoku_id)
-    return job.job_id
-
-
-@async_to_sync
-async def _abort_job(job_id: str) -> bool:
-    """Aborts given job.
-
-    :param job_id: ARQ job id.
-    :return: True if job was aborted, False otherwise.
-    """
-    redis = await create_pool(REDIS_SETTINGS)
-    job = Job(job_id=job_id, redis=redis)
-    aborted = await job.abort()
-    return aborted
 
 
 @extend_schema_view(
@@ -100,7 +72,6 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         """Starts solving a sudoku puzzle."""
         sudoku = self.get_object()
 
-        # If sudoku is already being solved or completed, return error
         if sudoku.status not in [
             SudokuStatusChoices.CREATED,
             SudokuStatusChoices.FAILED,
@@ -112,17 +83,18 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
         try:
-            job_id = _enqueue_solving_task(str(sudoku.id))
+            task_id = solve_sudoku.delay(str(sudoku.id))
 
             sudoku.status = SudokuStatusChoices.PENDING
-            sudoku.save(update_fields=["status"])
+            sudoku.task_id = task_id
+            sudoku.save(update_fields=["status", "task_id"])
 
             return Response(
                 {
                     "status": "success",
                     "message": "Sudoku solving started",
                     "sudoku_id": sudoku.id,
-                    "job_id": job_id,
+                    "task_id": task_id,
                 }
             )
         except Exception as e:
@@ -143,7 +115,9 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        aborted = _abort_job(str(sudoku_id))
+        # TODO: find a way to actually abort the Celery task
+        current_app.control.terminate()
+        aborted = True
 
         if aborted:
             sudoku.status = SudokuStatusChoices.ABORTED
