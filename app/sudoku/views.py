@@ -83,10 +83,10 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
         try:
-            task_id = solve_sudoku.delay(str(sudoku.id))
+            task = solve_sudoku.delay(str(sudoku.id))
 
             sudoku.status = SudokuStatusChoices.PENDING
-            sudoku.task_id = task_id
+            sudoku.task_id = task.id
             sudoku.save(update_fields=["status", "task_id"])
 
             return Response(
@@ -94,7 +94,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                     "status": "success",
                     "message": "Sudoku solving started",
                     "sudoku_id": sudoku.id,
-                    "task_id": task_id,
+                    "task_id": task.id,
                 }
             )
         except Exception as e:
