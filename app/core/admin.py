@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from sudoku.models import Sudoku
+from sudoku.models import Sudoku, SudokuSolution
 from user.models import User
 
 
@@ -62,3 +62,4 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Sudoku)
+admin.site.register(SudokuSolution)
