@@ -15,8 +15,23 @@ class _SudokuParams(TypedDict):
     grid: str
 
 
+class SudokuSolutionSerializer(serializers.ModelSerializer[SudokuSolution]):
+    """`SudokuSolution` serializer."""
+
+    sudoku_id = serializers.UUIDField(source="sudoku.id", read_only=True)
+
+    class Meta:
+        """Meta class for the `SudokuSolution` serializer."""
+
+        model = SudokuSolution
+        fields = ["id", "sudoku_id", "grid", "created_at", "updated_at"]
+        read_only_fields = ["id", "sudoku_id", "created_at", "updated_at"]
+
+
 class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
     """`Sudoku` serializer."""
+
+    solution = SudokuSolutionSerializer(required=False, allow_null=True)
 
     class Meta:
         """Meta class for the `Sudoku` serializer."""
@@ -28,18 +43,28 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
             "difficulty",
             "grid",
             "status",
+            "task_id",
+            "solution",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "status", "created_at", "updated_at"]
+        read_only_fields = ["id", "status", "task_id", "created_at", "updated_at"]
 
     def create(self, validated_data: _SudokuParams) -> Sudoku:
-        """Creates and returns a `Sudoku`.
+        """Creates and returns a `Sudoku`. 
+        
+        Adds a solution, if any.
 
         :param validated_data: Sudoku data.
         :return: `Sudoku`.
         """
-        return Sudoku.objects.create(**validated_data)
+        solution_data = validated_data.pop("solution", None)
+        sudoku = Sudoku.objects.create(**validated_data)
+
+        if solution_data:
+            SudokuSolution.objects.create(sudoku=sudoku, **solution_data)
+
+        return sudoku
 
     def update(self, instance: Sudoku, validated_data: _SudokuParams) -> Sudoku:
         """Updates and returns a `Sudoku`.
@@ -48,34 +73,22 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
         :param validated_data: Sudoku data.
         :return: Updated `Sudoku`.
         """
+        solution_data = validated_data.pop("solution", None)
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
         instance.save()
+
+        # Handle solution data if provided
+        if solution_data:
+            if hasattr(instance, "solution"):
+                solution = instance.solution
+                solution.grid = solution_data.get("grid", solution.grid)
+                solution.save()
+            else:
+                SudokuSolution.objects.create(sudoku=instance, **solution_data)
+
         return instance
-
-
-class SudokuSolutionSerializer(serializers.ModelSerializer[SudokuSolution]):
-    """Solved sudokus serializer."""
-
-    class Meta:
-        """Meta class for the `SudokuSolution` serializer."""
-
-        model = SudokuSolution
-        fields = [
-            "id",
-            "grid",
-            "solution",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "grid",
-            "solution",
-            "created_at",
-            "updated_at",
-        ]
 
 
 __all__ = ["SudokuSerializer", "SudokuSolutionSerializer"]
