@@ -62,7 +62,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             if difficulties_list:
                 queryset = queryset.filter(difficulty__in=difficulties_list)
 
-        return queryset.order_by("-id").distinct()
+        return queryset.order_by("-created_at").distinct()
 
     def perform_create(self, serializer: BaseSerializer[Sudoku]) -> None:
         """Creates new sudoku."""
