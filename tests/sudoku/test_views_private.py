@@ -6,7 +6,8 @@ from uuid import UUID
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from sudoku.models import Sudoku
+from sudoku.choices import SudokuStatusChoices
+from sudoku.models import Sudoku, SudokuSolution
 from sudoku.serializers import SudokuSerializer
 
 SUDOKUS_URL: Final[str] = reverse("sudoku:sudoku-list")
@@ -73,7 +74,7 @@ def test_retrieve_sudokus(
     assert len(response.data["results"]) == expected_count
     if offset is None or offset < 0:
         offset = 0
-    expected_sudokus = Sudoku.objects.filter(user=user).order_by("-id")[
+    expected_sudokus = Sudoku.objects.filter(user=user).order_by("-created_at")[
         offset : expected_count + offset
     ]
     serializer = SudokuSerializer(expected_sudokus, many=True)
@@ -194,3 +195,49 @@ def test_filter_sudokus_by_difficulties(
             sudoku = Sudoku.objects.get(id=sudoku_id)
             serializer = SudokuSerializer(sudoku)
             assert response_data == serializer.data
+
+
+def test_retrieve_sudoku_solution_for_completed_sudoku(set_up, create_sudoku) -> None:
+    """Tests that retrieving a Sudoku solution for a completed sudoku is successful."""
+    client, user = set_up
+    sudoku = create_sudoku(user=user, status=SudokuStatusChoices.COMPLETED)
+    sudoku_solution = SudokuSolution.objects.create(sudoku=sudoku, grid="8" * 81)
+
+    url = solution_url(sudoku.id)
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["id"] == str(sudoku_solution.id)
+    assert response.data["sudoku_id"] == str(sudoku.id)
+    assert response.data["grid"] == "8" * 81
+    assert response.data["created_at"] == sudoku_solution.created_at.isoformat().replace(
+        "+00:00", "Z"
+    )
+    assert response.data["updated_at"] == sudoku_solution.updated_at.isoformat().replace(
+        "+00:00", "Z"
+    )
+
+
+def test_retrieve_sudoku_nonexistent_solution(set_up, create_sudoku) -> None:
+    """Tests that retrieving a Sudoku solution that does not exist yet returns a 404 status."""
+    client, user = set_up
+    sudoku = create_sudoku(user=user)
+
+    url = solution_url(sudoku.id)
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.data["detail"] == "No solution found for this sudoku"
+
+
+def test_retrieve_sudoku_solution_with_no_grid(set_up, create_sudoku) -> None:
+    """Tests that retrieving a Sudoku solution that does not have a grid returns a 404 status."""
+    client, user = set_up
+    sudoku = create_sudoku(user=user, status=SudokuStatusChoices.COMPLETED)
+    SudokuSolution.objects.create(sudoku=sudoku)
+
+    url = solution_url(sudoku.id)
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.data["detail"] == "No solution found for this sudoku"
