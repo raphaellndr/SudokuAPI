@@ -48,7 +48,11 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
     pagination_class = _CustomLimitOffsetPaginatiopn
 
     def get_serializer_class(self) -> ModelSerializer:
-        if self.action == "retrieve":
+        """Returns the appropriate serializer based on the current action.
+
+        Uses `SudokuSolutionSerializer` only for GET request on the solution endpoint.
+        """
+        if "solution" in self.action and self.request.method == "GET":
             return SudokuSolutionSerializer
         return SudokuSerializer
 
@@ -144,6 +148,33 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             return Response(
                 {"detail": "An unexpected error occurred while aborting the job"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @solve.mapping.get
+    def get_solution(self, request: Request, pk: UUID | None = None) -> Response:
+        """Retrieves the solution for a sudoku."""
+        sudoku = self.get_object()
+
+        try:
+            solution = sudoku.solution
+            if sudoku.status != SudokuStatusChoices.COMPLETED:
+                return Response(
+                    {"detail": "Sudoku solution is not available yet"},
+                    status=status.HTTP_202_ACCEPTED,
+                )
+
+            if solution.grid is None:
+                return Response(
+                    {"detail": "No solution found for this sudoku"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            serializer = self.get_serializer_class()(solution)
+            return Response(serializer.data)
+        except Sudoku.solution.RelatedObjectDoesNotExist:
+            return Response(
+                {"detail": "No solution found for this sudoku"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
     @action(detail=True)
