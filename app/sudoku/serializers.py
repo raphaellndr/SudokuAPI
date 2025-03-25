@@ -31,6 +31,7 @@ class SudokuSolutionSerializer(serializers.ModelSerializer[SudokuSolution]):
 class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
     """`Sudoku` serializer."""
 
+    user_id = serializers.UUIDField(source="user.id", read_only=True)
     solution = SudokuSolutionSerializer(required=False, allow_null=True)
 
     class Meta:
@@ -39,6 +40,7 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
         model = Sudoku
         fields = [
             "id",
+            "user_id",
             "title",
             "difficulty",
             "grid",
@@ -48,7 +50,7 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "status", "task_id", "created_at", "updated_at"]
+        read_only_fields = ["id", "user_id", "status", "task_id", "created_at", "updated_at"]
 
     def create(self, validated_data: _SudokuParams) -> Sudoku:
         """Creates and returns a `Sudoku`.
