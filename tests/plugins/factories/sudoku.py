@@ -43,9 +43,9 @@ def create_sudokus(create_user) -> Callable:
 def create_sudoku(create_sudokus, create_user) -> Callable:
     """Pytest fixture for creating a new sudoku."""
 
-    def _factory(user: User | None = None, difficulty: str = "unknown", **kwargs) -> Sudoku:
+    def _factory(user: User | None = None, **kwargs) -> Sudoku:
         if user is None:
             user = create_user()
-        return create_sudokus(size=1, user=user, difficulty=difficulty, **kwargs)[0]
+        return create_sudokus(size=1, user=user, **kwargs)[0]
 
     return _factory
