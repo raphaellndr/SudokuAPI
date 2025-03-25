@@ -6,6 +6,7 @@ from celery import current_app
 from django.db.models import QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from kombu.exceptions import OperationalError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
@@ -109,17 +110,20 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         sudoku = self.get_object()
         sudoku_id = sudoku.id
 
+        if not sudoku.task_id:
+            return Response(
+                {"detail": "No task found to abort"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if sudoku.status not in [SudokuStatusChoices.RUNNING, SudokuStatusChoices.PENDING]:
             return Response(
                 {"detail": f"Cannot abort task with status: {sudoku.status}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # TODO: find a way to actually abort the Celery task
-        current_app.control.terminate()
-        aborted = True
-
-        if aborted:
+        try:
+            current_app.control.terminate(sudoku.task_id)
             sudoku.status = SudokuStatusChoices.ABORTED
             sudoku.save(update_fields=["status"])
             return Response(
@@ -130,10 +134,17 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                     "job_id": sudoku_id,
                 }
             )
-        return Response(
-            {"detail": "Failed to abort job, it may have completed or already been aborted"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        except OperationalError:
+            # Handle broker connectivity issues
+            return Response(
+                {"detail": "Service temporarily unavailable. Please try again later"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except Exception:
+            return Response(
+                {"detail": "An unexpected error occurred while aborting the job"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(detail=True)
     def status(self, request: Request, pk: UUID | None = None) -> Response:
