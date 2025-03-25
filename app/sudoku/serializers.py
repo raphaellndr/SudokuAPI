@@ -1,18 +1,36 @@
 """Serializers for sudokus."""
 
 from typing import TypedDict
+from uuid import UUID
 
 from rest_framework import serializers
 
 from .models import Sudoku, SudokuSolution
 
 
+class _SudokuSokution(TypedDict):
+    """Sudoku solution parameters."""
+
+    id: UUID
+    sudoku_id: UUID
+    grid: str | None
+    created_at: str
+    updated_at: str
+
+
 class _SudokuParams(TypedDict):
     """Sudoku parameters."""
 
+    id: UUID
+    user_id: UUID
     title: str
     difficulty: str
     grid: str
+    status: str
+    task_id: str | None
+    solution: _SudokuSokution | None
+    created_at: str
+    updated_at: str
 
 
 class SudokuSolutionSerializer(serializers.ModelSerializer[SudokuSolution]):
