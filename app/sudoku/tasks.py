@@ -13,7 +13,11 @@ from .models import Sudoku, SudokuSolution
 
 
 def _update_sudoku_status(sudoku_id: str, status: SudokuStatusChoices) -> None:
-    """Updates the status of a Sudoku."""
+    """Updates the status of a Sudoku.
+    
+    :param sudoku_id: The id of the Sudoku to update.
+    :param status: The new status for the Sudoku.
+    """
     Sudoku.objects.filter(id=sudoku_id).update(status=status)
 
 
@@ -32,7 +36,10 @@ def _check_consistency(sudoku_solver: SudokuResolver, /) -> bool:
 
 @app.task
 def solve_sudoku(sudoku_id: str) -> dict[str, Any]:
-    """Celery task to solve a Sudoku."""
+    """Celery task to solve a Sudoku.
+    
+    :param sudoku_id: The id of the Sudoku to solve.
+    """
     try:
         sudoku = Sudoku.objects.get(id=sudoku_id)
         _update_sudoku_status(sudoku_id, SudokuStatusChoices.RUNNING)
