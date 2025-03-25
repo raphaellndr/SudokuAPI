@@ -51,8 +51,8 @@ class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
         read_only_fields = ["id", "status", "task_id", "created_at", "updated_at"]
 
     def create(self, validated_data: _SudokuParams) -> Sudoku:
-        """Creates and returns a `Sudoku`. 
-        
+        """Creates and returns a `Sudoku`.
+
         Adds a solution, if any.
 
         :param validated_data: Sudoku data.
