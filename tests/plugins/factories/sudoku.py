@@ -21,7 +21,7 @@ class _SudokuFactory(factory.django.DjangoModelFactory):
         model = Sudoku
 
     title = "sudoku title"
-    difficulty = factory.Iterator(["Unknown", "Easy", "Medium", "Hard"])
+    difficulty = factory.Iterator(["unknown", "easy", "medium", "hard"])
     grid = factory.Faker("string_grid", size=81)
 
 
@@ -30,7 +30,7 @@ def create_sudokus(create_user) -> Callable:
     """Pytest fixture for creating a batch of new sudokus."""
 
     def _factory(
-        size: int = 10, user: User | None = None, difficulty: str = "Unknown", **kwargs
+        size: int = 10, user: User | None = None, difficulty: str = "unknown", **kwargs
     ) -> Sudoku:
         if user is None:
             user = create_user()
@@ -43,7 +43,7 @@ def create_sudokus(create_user) -> Callable:
 def create_sudoku(create_sudokus, create_user) -> Callable:
     """Pytest fixture for creating a new sudoku."""
 
-    def _factory(user: User | None = None, difficulty: str = "Unknown", **kwargs) -> Sudoku:
+    def _factory(user: User | None = None, difficulty: str = "unknown", **kwargs) -> Sudoku:
         if user is None:
             user = create_user()
         return create_sudokus(size=1, user=user, difficulty=difficulty, **kwargs)[0]

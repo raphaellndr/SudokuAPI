@@ -31,6 +31,6 @@ def sudoku_payload() -> Mapping[str, str]:
     """Returns a sudoku payload for testing."""
     return {
         "title": "sudoku",
-        "difficulty": "Unknown",
+        "difficulty": "unknown",
         "grid": "0" * 81,
     }

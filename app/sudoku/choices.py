@@ -18,22 +18,22 @@ class _ExtendedTextChoicesMeta(type(TextChoices)):  # type: ignore
 class SudokuDifficultyChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
     """Sudoku difficulties enum."""
 
-    UNKNOWN = "Unknown", _("Unknown")
-    EASY = "Easy", _("Easy")
-    MEDIUM = "Medium", _("Medium")
-    HARD = "Hard", _("Hard")
+    UNKNOWN = "unknown", _("Unknown")
+    EASY = "easy", _("Easy")
+    MEDIUM = "medium", _("Medium")
+    HARD = "hard", _("Hard")
 
 
 class SudokuStatusChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
     """Sudoku statuses enum."""
 
-    CREATED = "Created", _("Created")
-    PENDING = "Pending", _("Pending")
-    RUNNING = "Running", _("Running")
-    COMPLETED = "Completed", _("Completed")
-    FAILED = "Failed", _("Failed")
-    ABORTED = "Aborted", _("Aborted")
-    INVALID = "Invalid", _("Invalid")
+    CREATED = "created", _("Created")
+    PENDING = "pending", _("Pending")
+    RUNNING = "running", _("Running")
+    COMPLETED = "completed", _("Completed")
+    FAILED = "failed", _("Failed")
+    ABORTED = "aborted", _("Aborted")
+    INVALID = "invalid", _("Invalid")
 
 
 __all__ = ["SudokuDifficultyChoices", "SudokuStatusChoices"]
