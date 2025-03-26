@@ -18,7 +18,7 @@ from rest_framework.serializers import BaseSerializer, ModelSerializer
 from .choices import SudokuStatusChoices
 from .models import Sudoku
 from .serializers import SudokuSerializer, SudokuSolutionSerializer
-from .tasks import solve_sudoku
+from .tasks import solve_sudoku, update_sudoku_status
 
 
 class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
@@ -90,9 +90,9 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         try:
             task = solve_sudoku.delay(str(sudoku.id))
 
-            sudoku.status = SudokuStatusChoices.PENDING
+            update_sudoku_status(sudoku, SudokuStatusChoices.PENDING)
             sudoku.task_id = task.id
-            sudoku.save(update_fields=["status", "task_id"])
+            sudoku.save(update_fields=["task_id"])
 
             return Response(
                 {
