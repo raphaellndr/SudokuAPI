@@ -26,7 +26,7 @@ class SudokuStatusConsumer(AsyncJsonWebsocketConsumer):
             return
 
         # Add user to a group for receiving sudoku status updates
-        await self.channel_layer.groupd_add(
+        await self.channel_layer.group_add(
             f"sudoku_status_{user.id}",
             self.channel_name,
         )
