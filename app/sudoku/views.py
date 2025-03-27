@@ -128,8 +128,8 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
 
         try:
             current_app.control.terminate(sudoku.task_id)
-            sudoku.status = SudokuStatusChoices.ABORTED
-            sudoku.save(update_fields=["status"])
+            update_sudoku_status(sudoku, SudokuStatusChoices.ABORTED)
+
             return Response(
                 {
                     "status": "success",
