@@ -43,7 +43,7 @@ class SudokuSolutionSerializer(serializers.ModelSerializer[SudokuSolution]):
 
         model = SudokuSolution
         fields = ["id", "sudoku_id", "grid", "created_at", "updated_at"]
-        read_only_fields = ["id", "sudoku_id", "created_at", "updated_at"]
+        read_only_fields = ["id", "sudoku_id", "grid", "created_at", "updated_at"]
 
 
 class SudokuSerializer(serializers.ModelSerializer[Sudoku]):
