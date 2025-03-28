@@ -79,8 +79,6 @@ class SudokuSolution(TimestampedMixin):
         _("solution grid"),
         max_length=81,
         validators=[MinLengthValidator(limit_value=81)],
-        blank=True,
-        null=True,
     )
 
     def __str__(self) -> str:
