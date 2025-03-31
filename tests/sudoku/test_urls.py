@@ -22,6 +22,15 @@ def test_sudoku_detail_url() -> None:
     assert resolve(url).view_name == "sudokus:sudoku-detail"
 
 
+def test_sudoku_solver_url() -> None:
+    """Tests that sudoku's solver URL and view name are correct."""
+    pk = uuid.uuid4()
+    url = reverse("sudokus:sudoku-solver", kwargs={"pk": pk})
+
+    assert url == f"/api/sudokus/{pk}/solver/"
+    assert resolve(url).view_name == "sudokus:sudoku-solver"
+
+
 def test_sudoku_solution_url() -> None:
     """Tests that sudoku's solution URL and view name are correct."""
     pk = uuid.uuid4()

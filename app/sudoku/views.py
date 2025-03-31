@@ -72,7 +72,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         """Creates new sudoku."""
         serializer.save(user=self.request.user)
 
-    @action(detail=True, methods=["post"], url_path="solution", url_name="solution")
+    @action(detail=True, methods=["post"], url_path="solver", url_name="solver")
     def solve(self, request: Request, pk: UUID | None = None) -> Response:
         """Starts solving a sudoku puzzle."""
         sudoku = self.get_object()
@@ -150,8 +150,8 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @solve.mapping.get
-    def get_solution(self, request: Request, pk: UUID | None = None) -> Response:
+    @action(detail=True, url_path="solution", url_name="solution")
+    def solution(self, request: Request, pk: UUID | None = None) -> Response:
         """Retrieves the solution for a sudoku."""
         sudoku = self.get_object()
 
