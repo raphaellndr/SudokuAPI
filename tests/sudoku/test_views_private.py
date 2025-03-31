@@ -275,3 +275,15 @@ def test_delete_sudoku_also_deletes_solution(set_up, create_sudoku) -> None:
 
     with pytest.raises(SudokuSolution.DoesNotExist):
         SudokuSolution.objects.get(id=sudoku_solution.id)
+
+
+def test_delete_solution_of_uncompleted_sudoku(set_up, create_sudoku) -> None:
+    """Tests that deleting the solution of an uncompleted sudoku returns a 409 status code."""
+    client, user = set_up
+    sudoku = create_sudoku(user=user)
+    SudokuSolution.objects.create(sudoku=sudoku, grid="8" * 81)
+
+    url = solution_url(sudoku.id)
+    response = client.delete(url)
+
+    assert response.status_code == status.HTTP_409_CONFLICT

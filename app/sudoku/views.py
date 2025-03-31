@@ -94,12 +94,14 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             sudoku.task_id = task.id
             sudoku.save(update_fields=["task_id"])
 
-            return Response({
-                "status": "success",
-                "message": "Sudoku solving started",
-                "sudoku_id": sudoku.id,
-                "task_id": task.id,
-            })
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Sudoku solving started",
+                    "sudoku_id": sudoku.id,
+                    "task_id": task.id,
+                }
+            )
         except Exception as e:
             return Response(
                 {"detail": f"Failed to start solving: {e!s}"},
@@ -178,8 +180,8 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             solution = sudoku.solution
             if sudoku.status != SudokuStatusChoices.COMPLETED:
                 return Response(
-                    {"detail": "Sudoku solution is not available yet"},
-                    status=status.HTTP_202_ACCEPTED,
+                    {"detail": "Cannot delete solution because sudoku is not yet completed"},
+                    status=status.HTTP_409_CONFLICT,
                 )
 
             solution.delete()
