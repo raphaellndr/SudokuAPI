@@ -185,6 +185,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 )
 
             solution.delete()
+            update_sudoku_status(sudoku, SudokuStatusChoices.CREATED)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Sudoku.solution.RelatedObjectDoesNotExist:
             return Response(
