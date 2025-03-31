@@ -13,11 +13,20 @@ from sudoku.serializers import SudokuSerializer
 SUDOKUS_URL: Final[str] = reverse("sudokus:sudoku-list")
 
 
-def solution_url(sudoku_id: UUID) -> str:
-    """Returns the URL for solving a sudoku.
+def sudoku_url(sudoku_id: UUID) -> str:
+    """Returns the URL for a sudoku.
 
     :param sudoku_id: The id of the Sudoku.
     :return: The URL for solving the sudoku.
+    """
+    return reverse("sudokus:sudoku-detail", kwargs={"pk": sudoku_id})
+
+
+def solution_url(sudoku_id: UUID) -> str:
+    """Returns the URL for a sudoku solution.
+
+    :param sudoku_id: The id of the Sudoku.
+    :return: The URL for the sudoku solution.
     """
     return reverse("sudokus:sudoku-solution", kwargs={"pk": sudoku_id})
 
@@ -105,7 +114,8 @@ def test_partially_update_sudoku(set_up, create_sudoku, sudoku_payload) -> None:
     client, user = set_up
     sudoku = create_sudoku(user=user)
 
-    response = client.patch(f"{SUDOKUS_URL}{sudoku.id}/", {"title": sudoku_payload["title"]})
+    url = sudoku_url(sudoku.id)
+    response = client.patch(url, {"title": sudoku_payload["title"]})
 
     assert response.status_code == status.HTTP_200_OK
     sudoku.refresh_from_db()
@@ -118,7 +128,8 @@ def test_fully_update_sudoku(set_up, create_sudoku, sudoku_payload) -> None:
     client, user = set_up
     sudoku = create_sudoku(user=user)
 
-    response = client.put(f"{SUDOKUS_URL}{sudoku.id}/", sudoku_payload)
+    url = sudoku_url(sudoku.id)
+    response = client.put(url, sudoku_payload)
 
     assert response.status_code == status.HTTP_200_OK
     sudoku.refresh_from_db()
@@ -133,8 +144,9 @@ def test_update_user_does_not_work(set_up, create_user, create_sudoku) -> None:
     new_user = create_user()
     sudoku = create_sudoku(user=user)
 
+    url = sudoku_url(sudoku.id)
     payload = {"user": new_user.id}
-    response = client.patch(f"{SUDOKUS_URL}{sudoku.id}/", payload)
+    response = client.patch(url, payload)
     assert response.status_code == status.HTTP_200_OK
 
     sudoku.refresh_from_db()
@@ -146,7 +158,8 @@ def test_delete_sudoku(set_up, create_sudoku) -> None:
     client, user = set_up
     sudoku = create_sudoku(user=user)
 
-    response = client.delete(f"{SUDOKUS_URL}{sudoku.id}/")
+    url = sudoku_url(sudoku.id)
+    response = client.delete(url)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     with pytest.raises(Sudoku.DoesNotExist):
@@ -159,7 +172,8 @@ def test_delete_sudoku_does_not_work(set_up, create_user, create_sudoku) -> None
     other_user = create_user()
     sudoku = create_sudoku(user=other_user)
 
-    response = client.delete(f"{SUDOKUS_URL}{sudoku.id}/")
+    url = sudoku_url(sudoku.id)
+    response = client.delete(url)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
     assert sudoku.user == other_user
@@ -228,3 +242,36 @@ def test_retrieve_sudoku_nonexistent_solution(set_up, create_sudoku) -> None:
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.data["detail"] == "No solution found for this sudoku"
+
+
+def test_delete_sudoku_solution(set_up, create_sudoku) -> None:
+    """Tests that deleting a solution is successful."""
+    client, user = set_up
+    sudoku = create_sudoku(user=user, status=SudokuStatusChoices.COMPLETED)
+    sudoku_solution = SudokuSolution.objects.create(sudoku=sudoku, grid="8" * 81)
+
+    url = solution_url(sudoku.id)
+    response = client.delete(url)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    with pytest.raises(SudokuSolution.DoesNotExist):
+        SudokuSolution.objects.get(id=sudoku_solution.id)
+
+
+def test_delete_sudoku_also_deletes_solution(set_up, create_sudoku) -> None:
+    """Tests that deleting a sudoku also deletes its solution."""
+    client, user = set_up
+    sudoku = create_sudoku(user=user, status=SudokuStatusChoices.COMPLETED)
+    sudoku_solution = SudokuSolution.objects.create(sudoku=sudoku, grid="8" * 81)
+
+    url = sudoku_url(sudoku.id)
+    response = client.delete(url)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    with pytest.raises(Sudoku.DoesNotExist):
+        Sudoku.objects.get(id=sudoku.id)
+
+    with pytest.raises(SudokuSolution.DoesNotExist):
+        SudokuSolution.objects.get(id=sudoku_solution.id)

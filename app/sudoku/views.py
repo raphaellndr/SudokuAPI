@@ -94,14 +94,12 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             sudoku.task_id = task.id
             sudoku.save(update_fields=["task_id"])
 
-            return Response(
-                {
-                    "status": "success",
-                    "message": "Sudoku solving started",
-                    "sudoku_id": sudoku.id,
-                    "task_id": task.id,
-                }
-            )
+            return Response({
+                "status": "success",
+                "message": "Sudoku solving started",
+                "sudoku_id": sudoku.id,
+                "task_id": task.id,
+            })
         except Exception as e:
             return Response(
                 {"detail": f"Failed to start solving: {e!s}"},
@@ -163,14 +161,29 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                     status=status.HTTP_202_ACCEPTED,
                 )
 
-            if solution.grid is None:
-                return Response(
-                    {"detail": "No solution found for this sudoku"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
             serializer = self.get_serializer_class()(solution)
             return Response(serializer.data)
+        except Sudoku.solution.RelatedObjectDoesNotExist:
+            return Response(
+                {"detail": "No solution found for this sudoku"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    @solution.mapping.delete
+    def delete_solution(self, request: Request, pk: UUID | None = None) -> Response:
+        """Removes the solution for a sudoku."""
+        sudoku = self.get_object()
+
+        try:
+            solution = sudoku.solution
+            if sudoku.status != SudokuStatusChoices.COMPLETED:
+                return Response(
+                    {"detail": "Sudoku solution is not available yet"},
+                    status=status.HTTP_202_ACCEPTED,
+                )
+
+            solution.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except Sudoku.solution.RelatedObjectDoesNotExist:
             return Response(
                 {"detail": "No solution found for this sudoku"},
