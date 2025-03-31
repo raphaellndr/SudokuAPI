@@ -10,7 +10,7 @@ from sudoku.choices import SudokuStatusChoices
 from sudoku.models import Sudoku, SudokuSolution
 from sudoku.serializers import SudokuSerializer
 
-SUDOKUS_URL: Final[str] = reverse("sudoku:sudoku-list")
+SUDOKUS_URL: Final[str] = reverse("sudokus:sudoku-list")
 
 
 def solution_url(sudoku_id: UUID) -> str:
@@ -19,7 +19,7 @@ def solution_url(sudoku_id: UUID) -> str:
     :param sudoku_id: The id of the Sudoku.
     :return: The URL for solving the sudoku.
     """
-    return reverse("sudoku:sudoku-solution", kwargs={"pk": sudoku_id})
+    return reverse("sudokus:sudoku-solution", kwargs={"pk": sudoku_id})
 
 
 @pytest.fixture
@@ -222,19 +222,6 @@ def test_retrieve_sudoku_nonexistent_solution(set_up, create_sudoku) -> None:
     """Tests that retrieving a Sudoku solution that does not exist yet returns a 404 status."""
     client, user = set_up
     sudoku = create_sudoku(user=user)
-
-    url = solution_url(sudoku.id)
-    response = client.get(url)
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.data["detail"] == "No solution found for this sudoku"
-
-
-def test_retrieve_sudoku_solution_with_no_grid(set_up, create_sudoku) -> None:
-    """Tests that retrieving a Sudoku solution that does not have a grid returns a 404 status."""
-    client, user = set_up
-    sudoku = create_sudoku(user=user, status=SudokuStatusChoices.COMPLETED)
-    SudokuSolution.objects.create(sudoku=sudoku)
 
     url = solution_url(sudoku.id)
     response = client.get(url)

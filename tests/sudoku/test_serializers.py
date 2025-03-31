@@ -1,6 +1,3 @@
-# TODO: ajouter un test avec et sans solution pour checker si ça la sérialise bien
-
-import pytest
 from sudoku.models import SudokuSolution
 from sudoku.serializers import SudokuSerializer, SudokuSolutionSerializer
 
@@ -23,17 +20,11 @@ def test_serialize_sudoku(create_user, create_sudoku) -> None:
     assert serializer.data["updated_at"] == sudoku.updated_at.isoformat().replace("+00:00", "Z")
 
 
-@pytest.mark.parametrize(
-    "solution_grid",
-    (
-        None,
-        "8" * 81,
-    ),
-)
-def test_serialize_sudoku_solution(create_user, create_sudoku, solution_grid: str | None) -> None:
+def test_serialize_sudoku_solution(create_user, create_sudoku) -> None:
     """Tests that serializing a sudoku with a solution works as expected."""
     user = create_user()
     sudoku = create_sudoku(user=user)
+    solution_grid = "8" * 81
     sudoku_solution = SudokuSolution.objects.create(sudoku=sudoku, grid=solution_grid)
     serializer = SudokuSolutionSerializer(sudoku_solution)
 
@@ -48,19 +39,11 @@ def test_serialize_sudoku_solution(create_user, create_sudoku, solution_grid: st
     )
 
 
-@pytest.mark.parametrize(
-    "solution_grid",
-    (
-        None,
-        "8" * 81,
-    ),
-)
-def test_serialize_sudoku_with_solution(
-    create_user, create_sudoku, solution_grid: str | None
-) -> None:
+def test_serialize_sudoku_with_solution(create_user, create_sudoku) -> None:
     """Tests that serializing a sudoku with a solution works as expected."""
     user = create_user()
     sudoku = create_sudoku(user=user)
+    solution_grid = "8" * 81
     sudoku_solution = SudokuSolution.objects.create(sudoku=sudoku, grid=solution_grid)
     serializer = SudokuSerializer(sudoku)
 

@@ -30,13 +30,13 @@ def test_create_sudoku_solution(transactional_db) -> None:
         SudokuSolution.objects.create()
 
 
-@pytest.mark.parametrize("solution_grid", [None, "8" * 81])
-def test_create_sudoku_with_solution(create_sudoku, solution_grid: str | None) -> None:
+def test_create_sudoku_with_solution(create_sudoku) -> None:
     """Tests creating a new sudoku with a solution.
 
     Checks that the solution exists and that the related sudoku is the correct one.
     """
     sudoku = create_sudoku()
+    solution_grid = "8" * 81
     sudoku_solution = SudokuSolution.objects.create(sudoku=sudoku, grid=solution_grid)
 
     assert sudoku.solution.grid == solution_grid

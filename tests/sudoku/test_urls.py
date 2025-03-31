@@ -7,34 +7,34 @@ from django.urls import resolve, reverse
 
 def test_sudokus_url() -> None:
     """Tests that sudokus' URL and view name are correct."""
-    url = reverse("sudoku:sudoku-list")
+    url = reverse("sudokus:sudoku-list")
 
-    assert url == "/api/sudoku/sudokus/"
-    assert resolve(url).view_name == "sudoku:sudoku-list"
+    assert url == "/api/sudokus/"
+    assert resolve(url).view_name == "sudokus:sudoku-list"
 
 
 def test_sudoku_detail_url() -> None:
     """Tests that sudoku's detail URL and view name are correct."""
     pk = uuid.uuid4()
-    url = reverse("sudoku:sudoku-detail", kwargs={"pk": pk})
+    url = reverse("sudokus:sudoku-detail", kwargs={"pk": pk})
 
-    assert url == f"/api/sudoku/sudokus/{pk}/"
-    assert resolve(url).view_name == "sudoku:sudoku-detail"
+    assert url == f"/api/sudokus/{pk}/"
+    assert resolve(url).view_name == "sudokus:sudoku-detail"
 
 
 def test_sudoku_solution_url() -> None:
     """Tests that sudoku's solution URL and view name are correct."""
     pk = uuid.uuid4()
-    url = reverse("sudoku:sudoku-solution", kwargs={"pk": pk})
+    url = reverse("sudokus:sudoku-solution", kwargs={"pk": pk})
 
-    assert url == f"/api/sudoku/sudokus/{pk}/solution/"
-    assert resolve(url).view_name == "sudoku:sudoku-solution"
+    assert url == f"/api/sudokus/{pk}/solution/"
+    assert resolve(url).view_name == "sudokus:sudoku-solution"
 
 
 def test_sudoku_status_url() -> None:
     """Tests that sudoku's status URL and view name are correct."""
     pk = uuid.uuid4()
-    url = reverse("sudoku:sudoku-status", kwargs={"pk": pk})
+    url = reverse("sudokus:sudoku-status", kwargs={"pk": pk})
 
-    assert url == f"/api/sudoku/sudokus/{pk}/status/"
-    assert resolve(url).view_name == "sudoku:sudoku-status"
+    assert url == f"/api/sudokus/{pk}/status/"
+    assert resolve(url).view_name == "sudokus:sudoku-status"

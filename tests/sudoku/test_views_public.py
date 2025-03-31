@@ -5,7 +5,7 @@ from typing import Final
 from django.urls import reverse
 from rest_framework import status
 
-SUDOKU_URL: Final[str] = reverse("sudoku:sudoku-list")
+SUDOKU_URL: Final[str] = reverse("sudokus:sudoku-list")
 
 
 def test_create_sudoku_is_unauthorized(api_client, sudoku_payload) -> None:

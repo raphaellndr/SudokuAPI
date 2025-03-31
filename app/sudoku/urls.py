@@ -9,9 +9,9 @@ from rest_framework.routers import DefaultRouter
 from .views import SudokuViewSet
 
 router = DefaultRouter()
-router.register("sudokus", SudokuViewSet)
+router.register("", SudokuViewSet)
 
-app_name: Final[str] = "sudoku"
+app_name: Final[str] = "sudokus"
 
 urlpatterns: list[URLResolver | URLPattern] = [
     path("", include(router.urls)),
