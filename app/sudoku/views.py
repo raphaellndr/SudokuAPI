@@ -21,7 +21,7 @@ from .serializers import SudokuSerializer, SudokuSolutionSerializer
 from .tasks import solve_sudoku, update_sudoku_status
 
 
-class _CustomLimitOffsetPaginatiopn(LimitOffsetPagination):
+class _CustomLimitOffsetPagination(LimitOffsetPagination):
     """Custom Pagination for Sudoku viewset."""
 
     default_limit = 5
@@ -45,7 +45,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
     serializer_class = SudokuSerializer
     queryset = Sudoku.objects.all()
     permission_classes = [IsAuthenticated]
-    pagination_class = _CustomLimitOffsetPaginatiopn
+    pagination_class = _CustomLimitOffsetPagination
 
     def get_serializer_class(self) -> ModelSerializer:
         """Returns the appropriate serializer based on the current action.
