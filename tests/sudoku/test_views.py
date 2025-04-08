@@ -196,7 +196,7 @@ def test_fully_update_sudoku(
             assert getattr(sudoku, k) == v
     else:
         assert sudoku.title == "sudoku title"
-        assert sudoku.difficulty in SudokuDifficultyChoices.values 
+        assert sudoku.difficulty in SudokuDifficultyChoices.values
         assert sudoku.grid
         assert sudoku.status == SudokuStatusChoices.CREATED
     assert sudoku.user == user
@@ -562,9 +562,7 @@ def test_abort_sudoku_solver_is_successful(
         None,
     ],
 )
-def test_get_sudoku_status(
-    request, api_client, create_sudoku, user: str | None
-) -> None:
+def test_get_sudoku_status(request, api_client, create_sudoku, user: str | None) -> None:
     """Tests that getting the status of a sudoku is successful."""
     if user is not None:
         user = request.getfixturevalue(user)()
