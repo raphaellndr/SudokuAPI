@@ -26,26 +26,22 @@ class _SudokuFactory(factory.django.DjangoModelFactory):
 
 
 @pytest.fixture
-def create_sudokus(create_user) -> Callable:
+def create_sudokus() -> Callable:
     """Pytest fixture for creating a batch of new sudokus."""
 
     def _factory(
         size: int = 10, user: User | None = None, difficulty: str = "unknown", **kwargs
     ) -> Sudoku:
-        if user is None:
-            user = create_user()
         return _SudokuFactory.create_batch(size=size, user=user, difficulty=difficulty, **kwargs)
 
     return _factory
 
 
 @pytest.fixture
-def create_sudoku(create_sudokus, create_user) -> Callable:
+def create_sudoku(create_sudokus) -> Callable:
     """Pytest fixture for creating a new sudoku."""
 
     def _factory(user: User | None = None, **kwargs) -> Sudoku:
-        if user is None:
-            user = create_user()
         return create_sudokus(size=1, user=user, **kwargs)[0]
 
     return _factory
