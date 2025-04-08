@@ -532,14 +532,13 @@ def test_abort_sudoku_solver_is_successful(
     def mock_abort_view(self: SudokuViewSet, request: Request, pk: str | None) -> Response:
         """Mock function to simulate abort view."""
         sudoku = Sudoku.objects.get(id=pk)
+        sudoku.task_id = None
         sudoku.status = SudokuStatusChoices.ABORTED
-        sudoku.save(update_fields=["status"])
+        sudoku.save(update_fields=["task_id", "status"])
         return Response(
             {
                 "status": "success",
                 "message": "Sudoku solving aborted",
-                "sudoku_id": str(pk),
-                "task_id": sudoku.task_id,
             }
         )
 
@@ -551,8 +550,6 @@ def test_abort_sudoku_solver_is_successful(
     assert response.status_code == status.HTTP_200_OK
     assert response.data["status"] == "success"
     assert response.data["message"] == "Sudoku solving aborted"
-    assert response.data["sudoku_id"] == str(sudoku.id)
-    assert response.data["task_id"] == task_id
 
 
 @pytest.mark.parametrize(

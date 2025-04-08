@@ -179,13 +179,13 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         try:
             current_app.control.terminate(sudoku.task_id)
             update_sudoku_status(sudoku, SudokuStatusChoices.ABORTED)
+            sudoku.task_id = None
+            sudoku.save(update_fields=["task_id"])
 
             return Response(
                 {
                     "status": "success",
                     "message": "Sudoku solving aborted",
-                    "sudoku_id": pk,
-                    "task_id": sudoku.task_id,
                 }
             )
         except OperationalError:
