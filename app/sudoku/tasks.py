@@ -1,40 +1,18 @@
 """Sudoku related tasks."""
 
 from copy import copy
+from datetime import timedelta
 from typing import Any
 
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+from django.utils import timezone
 from sudoku_resolver.exceptions import ConsistencyError
 from sudoku_resolver.sudoku import Sudoku as SudokuResolver
 
 from app.celery import app
 
+from .base import update_sudoku_status
 from .choices import SudokuStatusChoices
 from .models import Sudoku, SudokuSolution
-
-
-def update_sudoku_status(sudoku: Sudoku, status: SudokuStatusChoices) -> None:
-    """Updates the status of a Sudoku.
-
-    Also sends status update via WebSocket.
-
-    :param sudoku: Sudoku to update.
-    :param status: new status for the Sudoku to update.
-    """
-    sudoku.status = status
-    sudoku.save(update_fields=["status"])
-
-    channel_layer = get_channel_layer()
-    room_group_name = f"sudoku_status_{sudoku.id}"
-    async_to_sync(channel_layer.group_send)(
-        room_group_name,
-        {
-            "type": "status_update",
-            "sudoku_id": str(sudoku.id),
-            "status": status,
-        },
-    )
 
 
 def _check_consistency(sudoku_solver: SudokuResolver, /) -> bool:
@@ -55,6 +33,7 @@ def solve_sudoku(sudoku_id: str) -> dict[str, Any]:
     """Celery task to solve a Sudoku.
 
     :param sudoku_id: The id of the Sudoku to solve.
+    :returns: A dictionary with the status and solution id if successful.
     """
     try:
         sudoku = Sudoku.objects.get(id=sudoku_id)
@@ -86,4 +65,20 @@ def solve_sudoku(sudoku_id: str) -> dict[str, Any]:
         return {"status": "failed", "error": str(e)}
 
 
-__all__ = ["solve_sudoku", "update_sudoku_status"]
+@app.task
+def cleanup_anonymous_sudokus(hours: int = 24) -> str:
+    """Celery task to clean up anonymous Sudokus older than a certain number of hours.
+
+    :param hours: The number of hours to keep anonymous Sudokus.
+    :returns: A message indicating the number of deleted Sudokus.
+    """
+    cutoff_time = timezone.now() - timedelta(hours=hours)
+
+    old_anonymous_sudokus = Sudoku.objects.filter(user__isnull=True, created_at__lt=cutoff_time)
+    count = old_anonymous_sudokus.count()
+    old_anonymous_sudokus.delete()
+
+    return f"Deleted {count} anonymous Sudokus older than {hours} hours."
+
+
+__all__ = ["cleanup_anonymous_sudokus", "solve_sudoku"]

@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 env = environ.Env(  # type: ignore
     DEBUG=(bool, False),
@@ -246,6 +247,13 @@ SOCIALACCOUNT_PROVIDERS = {
 
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-anonymous-sudokus": {
+        "task": "sudoku.tasks.cleanup_anonymous_sudokus",
+        "schedule": crontab(hour="*/4", minute=0),  # Run every 4 hours
+        "kwargs": {"hours": 24},  # Delete anonymous sudokus older than 24 hours
+    },
+}
 
 
 # WebSocket configuration
