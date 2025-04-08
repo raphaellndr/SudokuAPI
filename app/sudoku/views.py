@@ -1,7 +1,6 @@
 """Views for the sudoku APIs."""
 
 from collections.abc import Sequence
-from uuid import UUID
 
 from celery import current_app
 from django.db.models import QuerySet
@@ -123,7 +122,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             serializer.save(user=None)
 
     @action(detail=True, methods=["post"], url_path="solver", url_name="solver")
-    def solve(self, request: Request, pk: UUID | None = None) -> Response:
+    def solve(self, request: Request, pk: str | None = None) -> Response:
         """Starts solving a sudoku puzzle."""
         sudoku = self.get_object()
         _check_sudoku_ownership(sudoku, request)
@@ -160,7 +159,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
     @solve.mapping.delete
-    def abort(self, request: Request, pk: UUID | None = None) -> Response:
+    def abort(self, request: Request, pk: str | None = None) -> Response:
         """Aborts a running sudoku solver task."""
         sudoku = self.get_object()
         _check_sudoku_ownership(sudoku, request)
@@ -202,7 +201,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
     @action(detail=True, url_path="solution", url_name="solution")
-    def solution(self, request: Request, pk: UUID | None = None) -> Response:
+    def solution(self, request: Request, pk: str | None = None) -> Response:
         """Retrieves the solution for a sudoku."""
         sudoku = self.get_object()
         _check_sudoku_ownership(sudoku, request)
@@ -225,7 +224,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
     @solution.mapping.delete
-    def delete_solution(self, request: Request, pk: UUID | None = None) -> Response:
+    def delete_solution(self, request: Request, pk: str | None = None) -> Response:
         """Removes the solution for a sudoku."""
         sudoku = self.get_object()
         _check_sudoku_ownership(sudoku, request)
@@ -248,7 +247,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
     @action(detail=True)
-    def status(self, request: Request, pk: UUID | None = None) -> Response:
+    def status(self, request: Request, pk: str | None = None) -> Response:
         """Fetches the current status of a Sudoku."""
         sudoku = self.get_object()
         _check_sudoku_ownership(sudoku, request)
