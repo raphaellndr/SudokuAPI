@@ -44,4 +44,4 @@ def status_url(sudoku_id: UUID, /) -> str:
     return reverse("sudokus:sudoku-status", kwargs={"pk": sudoku_id})
 
 
-__all__ = ["SUDOKUS_URL", "solution_url", "sudoku_url", "status_url"]
+__all__ = ["SUDOKUS_URL", "solution_url", "status_url", "sudoku_url"]
