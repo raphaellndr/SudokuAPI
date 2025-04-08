@@ -21,7 +21,7 @@ def test_serialize_sudoku(create_user, create_sudoku) -> None:
 
 
 def test_serialize_sudoku_solution(create_user, create_sudoku) -> None:
-    """Tests that serializing a sudoku with a solution works as expected."""
+    """Tests that serializing a sudoku solution works as expected."""
     user = create_user()
     sudoku = create_sudoku(user=user)
     solution_grid = "8" * 81
