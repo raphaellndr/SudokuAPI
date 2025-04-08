@@ -40,7 +40,6 @@ class Sudoku(TimestampedMixin):
     grid = models.CharField(
         _("grid"),
         max_length=81,
-        default="0" * 81,
         validators=[MinLengthValidator(limit_value=81)],
     )
     status = models.CharField(
