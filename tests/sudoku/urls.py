@@ -35,4 +35,13 @@ def solver_url(sudoku_id: UUID, /) -> str:
     return reverse("sudokus:sudoku-solver", kwargs={"pk": sudoku_id})
 
 
-__all__ = ["SUDOKUS_URL", "solution_url", "sudoku_url"]
+def status_url(sudoku_id: UUID, /) -> str:
+    """Returns the URL for a sudoku status.
+
+    :param sudoku_id: The id of the Sudoku.
+    :return: The URL for the sudoku status.
+    """
+    return reverse("sudokus:sudoku-status", kwargs={"pk": sudoku_id})
+
+
+__all__ = ["SUDOKUS_URL", "solution_url", "sudoku_url", "status_url"]
