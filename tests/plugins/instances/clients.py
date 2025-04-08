@@ -27,8 +27,7 @@ def api_client(transactional_db) -> APIClient:
 
     def _factory(user: User | None = None) -> APIClient:
         client = APIClient()
-        if user is not None:
-            client.force_authenticate(user=user)
+        client.force_authenticate(user=user)
         return client
 
     return _factory
