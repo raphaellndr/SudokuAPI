@@ -138,7 +138,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
         try:
-            task = solve_sudoku.delay(str(sudoku.id))
+            task = solve_sudoku.delay(pk)
 
             update_sudoku_status(sudoku, SudokuStatusChoices.PENDING)
             sudoku.task_id = task.id
@@ -148,7 +148,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 {
                     "status": "success",
                     "message": "Sudoku solving started",
-                    "sudoku_id": str(sudoku.id),
+                    "sudoku_id": pk,
                     "task_id": task.id,
                 }
             )
@@ -184,7 +184,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 {
                     "status": "success",
                     "message": "Sudoku solving aborted",
-                    "sudoku_id": str(sudoku.id),
+                    "sudoku_id": pk,
                     "task_id": sudoku.task_id,
                 }
             )
