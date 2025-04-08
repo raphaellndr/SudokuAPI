@@ -25,6 +25,7 @@ class Sudoku(TimestampedMixin):
         on_delete=models.CASCADE,
         related_name="created_sudokus",
         verbose_name=_("creator"),
+        null=True,
     )
     title = models.CharField(
         _("title"),
