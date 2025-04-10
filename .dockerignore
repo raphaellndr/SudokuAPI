@@ -1,0 +1,29 @@
+# Python
+**/__pycache__/
+.pre-commit-config.yaml
+
+# Linting
+.mypy.ini
+.mypy_cache
+.ruff.toml
+.ruff_cache
+
+# IDE
+.vscode/
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Testing
+tests/
+.pytest.ini
+.pytest_cache
+
+# MacOS
+.DS_Store

@@ -245,8 +245,8 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Celery settings
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
 CELERY_BEAT_SCHEDULE = {
     "cleanup-anonymous-sudokus": {
         "task": "sudoku.tasks.cleanup_anonymous_sudokus",
