@@ -484,7 +484,7 @@ def test_solve_sudoku_is_successful(
     sudoku = create_sudoku(user=user)
     task_id = "12345"
 
-    def mock_solve_view(self: SudokuViewSet, request: Request, pk: str | None) -> Response:
+    def mock_solve_view(self: SudokuViewSet, request: Request, pk: str | None = None) -> Response:
         """Mock function to simulate solve view."""
         sudoku = Sudoku.objects.get(id=pk)
         sudoku.task_id = task_id
@@ -494,7 +494,7 @@ def test_solve_sudoku_is_successful(
             {
                 "status": "success",
                 "message": "Sudoku solving started",
-                "sudoku_id": str(pk),
+                "sudoku_id": pk,
                 "task_id": task_id,
             }
         )
