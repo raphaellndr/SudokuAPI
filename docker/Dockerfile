@@ -16,13 +16,12 @@ ENV PATH="/root/.local/bin:${PATH}" \
     POETRY_VERSION=2.1.1
 
 # Install system dependencies and pipx
-RUN apk add --no-cache \
-    pipx \
-    git \
-    build-base \
-    libffi-dev \
-    # clean up
-    && rm -rf /var/cache/apk/*
+RUN apk add --update --no-cache \
+        pipx \
+        git \
+        libffi-dev && \
+    apk add --update --no-cache --virtual .tmp-build-deps \
+        build-base postgresql-dev musl-dev
 
 # Install poetry with pipx and inject poetry-plugin-bundle
 RUN pipx install poetry==${POETRY_VERSION}
@@ -34,17 +33,35 @@ COPY . .
 # Bundle dependencies into a virtual environment
 RUN poetry bundle venv /venv
 
+# Clean up
+RUN rm -rf /var/cache/apk/* && apk del .tmp-build-deps
+
 ####################
 # Web server image #
 ####################
 FROM python:${PYTHON_VERSION}-alpine AS runtime
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH="/venv/bin:${PATH}"
+ENV PATH="/venv/bin:${PATH}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install system dependencies
+RUN apk add --update --no-cache postgresql-libs
+
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Copy virtual environment from builder
 COPY --from=builder /venv /venv
-COPY --from=builder /src/app /app
+COPY --from=builder /src/app /src/app
+COPY --from=builder /src/docker /src/docker
 
-ENTRYPOINT ["/venv/bin/python3"]
+RUN chmod +x /src/docker/server-entrypoint.sh
+RUN chmod +x /src/docker/worker-entrypoint.sh
+RUN chmod +x /src/docker/beat-entrypoint.sh
+
+# Set directories ownership to the non-root user
+RUN chown -R appuser:appgroup /src /venv
+
+WORKDIR /src/app
+USER appuser

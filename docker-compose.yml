@@ -1,5 +1,6 @@
 services:
   redis:
+    restart: unless-stopped
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -11,43 +12,75 @@ services:
       timeout: 3s
       retries: 5
 
+  postgres:
+    restart: unless-stopped
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:${PGDATA}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    env_file:
+      - .env
+
   web:
+    restart: unless-stopped
     build: 
       context: .
+      dockerfile: ./docker/Dockerfile
       args:
         PYTHON_VERSION: 3.12
-    command: ["/app/manage.py", "runserver", "0.0.0.0:8000"]
+    entrypoint: /src/docker/server-entrypoint.sh
     ports:
       - "8000:8000"
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
 
   celery_worker:
+    restart: unless-stopped
     build:
       context: .
+      dockerfile: ./docker/Dockerfile
       args:
         PYTHON_VERSION: 3.12
-    command: ["-m", "celery", "--workdir=/app", "-A", "app", "worker", "--loglevel=info"]
+    entrypoint: /src/docker/worker-entrypoint.sh
     depends_on:
-      - redis
-      - web
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_started
     env_file:
       - .env
 
   celery_beat:
+    restart: unless-stopped
     build:
       context: .
+      dockerfile: ./docker/Dockerfile
       args:
         PYTHON_VERSION: 3.12
-    command: ["-m", "celery", "--workdir=/app", "-A", "app", "beat", "--loglevel=info"]
+    entrypoint: /src/docker/beat-entrypoint.sh
     depends_on:
-      - redis
-      - web
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_started
     env_file:
       - .env
 
 volumes:
   redis_data:
+  postgres-data:
