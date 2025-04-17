@@ -25,6 +25,12 @@ asgiref = "3.8.1"
 channels = {extras = ["daphne"], version = "4.2.0"}
 psycopg2 = "2.9.10"
 
+[tool.poetry.group.production]
+optional = true
+
+[tool.poetry.group.production.dependencies]
+django-redis = "5.4.0"
+
 [tool.poetry.group.dev]
 optional = true
 
