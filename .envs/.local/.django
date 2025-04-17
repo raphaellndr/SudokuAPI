@@ -1,0 +1,2 @@
+# Django environment settings for local development
+DJANGO_SETTINGS_MODULE=config.settings.local

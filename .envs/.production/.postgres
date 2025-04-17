@@ -1,0 +1,12 @@
+# PostgreSQL environment settings for production
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=sudoku_prod
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=!!! SET POSTGRES_PASSWORD !!!
+PGDATA=/var/lib/postgresql/data
+
+# Locale settings
+LANG=en_US.utf8
+LC_COLLATE=en_US.utf8
+LC_CTYPE=en_US.utf8
