@@ -1,4 +1,4 @@
 # Django environment settings for production
-DJANGO_SECRET_KEY=zd!-k_e2jtmh!ypc$i@@k88hjg!xw69qh=jskm2_r$hp2@*ck%
+DJANGO_SECRET_KEY=!!! SET THIS TO A SECRET KEY !!!
 DJANGO_SETTINGS_MODULE=config.settings.production
 DJANGO_ALLOWED_HOSTS=localhost,0.0.0.0,127.0.0.1
