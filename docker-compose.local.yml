@@ -1,0 +1,82 @@
+services:
+  redis:
+    restart: unless-stopped
+    image: redis:7-alpine
+    container_name: local-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - local-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    restart: unless-stopped
+    image: postgres:17-alpine
+    container_name: postgres-local
+    ports:
+      - "5432:5432"
+    volumes:
+      - local-postgres-data:${PGDATA}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    env_file:
+      - ./.envs/.local/.postgres
+
+  web: &web
+    restart: unless-stopped
+    container_name: local-web
+    build: 
+      context: .
+      dockerfile: ./compose/local/Dockerfile
+      args:
+        PYTHON_VERSION: 3.12
+    command: ./entrypoint.sh
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+      - ./.envs/.local/.redis
+      - ./.envs/.env
+
+  celery_worker:
+    <<: *web
+    container_name: local-celery-worker
+    command: ./worker-entrypoint.sh
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_started
+    ports: []
+
+  celery_beat:
+    <<: *web
+    container_name: local-celery-beat
+    command: ./beat-entrypoint.sh
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_started
+    ports: []
+
+volumes:
+  local-redis-data:
+  local-postgres-data:
