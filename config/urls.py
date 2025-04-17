@@ -28,7 +28,7 @@ urlpatterns: list[URLResolver | URLPattern] = [
         SpectacularSwaggerView.as_view(url_name="api-schema"),
         name="api-docs",
     ),
-    path("api/auth/", include("authentication.urls")),
-    path("api/sudokus/", include("sudoku.urls")),
+    path("api/auth/", include("app.authentication.urls")),
+    path("api/sudokus/", include("app.sudoku.urls")),
     path("accounts/", include("allauth.urls")),
 ]
