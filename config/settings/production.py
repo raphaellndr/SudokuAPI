@@ -16,17 +16,6 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default="")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "HOST": env("POSTGRES_HOST", default="postgres"),
-        "PORT": env("POSTGRES_PORT", default="5432"),
-        "NAME": env("POSTGRES_DB", default="sudoku_prod"),
-        "USER": env("POSTGRES_USER", default="postgres"),
-        "PASSWORD": env("POSTGRES_PASSWORD", default="postgres"),
-    }
-}
-
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
