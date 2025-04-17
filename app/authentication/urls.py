@@ -7,9 +7,10 @@ from dj_rest_auth.views import LoginView, LogoutView
 from django.urls import path
 from django.urls.resolvers import URLPattern, URLResolver
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from user.views import ManageUserView
 
-from authentication import views
+from app.user.views import ManageUserView
+
+from . import views
 
 app_name: Final[str] = "authentication"
 

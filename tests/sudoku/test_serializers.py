@@ -1,7 +1,8 @@
 """Tests Sudoku serializers."""
 
 import pytest
-from sudoku.serializers import (
+
+from app.sudoku.serializers import (
     AnonymousSudokuSerializer,
     SudokuSerializer,
     SudokuSolutionSerializer,

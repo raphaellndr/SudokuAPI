@@ -2,8 +2,9 @@
 
 import pytest
 from django.db import IntegrityError
-from sudoku.choices import SudokuDifficultyChoices, SudokuStatusChoices
-from sudoku.models import SudokuSolution
+
+from app.sudoku.choices import SudokuDifficultyChoices, SudokuStatusChoices
+from app.sudoku.models import SudokuSolution
 
 
 @pytest.mark.django_db

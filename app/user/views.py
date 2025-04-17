@@ -2,7 +2,7 @@
 
 from rest_framework import generics, permissions
 
-from user.serializers import UserSerializer
+from app.user.serializers import UserSerializer
 
 from .models import User
 

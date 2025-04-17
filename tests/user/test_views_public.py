@@ -6,7 +6,8 @@ import pytest
 from django.db import IntegrityError
 from django.urls import reverse
 from rest_framework import status
-from user.models import User
+
+from app.user.models import User
 
 LOGIN_URL: Final[str] = reverse("authentication:rest_login")
 REGISTER_USER_URL: Final[str] = reverse("authentication:rest_register")

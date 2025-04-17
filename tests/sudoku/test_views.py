@@ -6,10 +6,11 @@ import pytest
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
-from sudoku.choices import SudokuDifficultyChoices, SudokuStatusChoices
-from sudoku.models import Sudoku, SudokuSolution
-from sudoku.serializers import SudokuSerializer
-from sudoku.views import SudokuViewSet
+
+from app.sudoku.choices import SudokuDifficultyChoices, SudokuStatusChoices
+from app.sudoku.models import Sudoku, SudokuSolution
+from app.sudoku.serializers import SudokuSerializer
+from app.sudoku.views import SudokuViewSet
 
 from .urls import SUDOKUS_URL, solution_url, solver_url, status_url, sudoku_url
 

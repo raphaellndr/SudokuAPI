@@ -2,11 +2,12 @@
 
 import uuid
 
-from core.base import TimestampedMixin
 from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from app.core.base import TimestampedMixin
 
 from .choices import SudokuDifficultyChoices, SudokuStatusChoices
 

@@ -4,7 +4,8 @@ from collections.abc import Callable
 
 import factory
 import pytest
-from user.models import User
+
+from app.user.models import User
 
 
 class _UserFactory(factory.django.DjangoModelFactory):

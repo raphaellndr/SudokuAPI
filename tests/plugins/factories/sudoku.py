@@ -4,8 +4,9 @@ from collections.abc import Callable
 
 import factory
 import pytest
-from sudoku.models import Sudoku, SudokuSolution
-from user.models import User
+
+from app.sudoku.models import Sudoku, SudokuSolution
+from app.user.models import User
 
 from .providers import SudokuGridProvider
 

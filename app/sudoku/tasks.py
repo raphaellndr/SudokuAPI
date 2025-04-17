@@ -8,7 +8,7 @@ from django.utils import timezone
 from sudoku_resolver.exceptions import ConsistencyError
 from sudoku_resolver.sudoku import Sudoku as SudokuResolver
 
-from app.celery import app
+from config.celery import app
 
 from .base import update_sudoku_status
 from .choices import SudokuStatusChoices

@@ -4,7 +4,8 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 from rest_framework import status
-from user.models import User
+
+from app.user.models import User
 
 
 @pytest.fixture
