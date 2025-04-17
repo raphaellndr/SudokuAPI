@@ -2,7 +2,10 @@
 
 from typing import TypedDict
 
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+from app.sudoku.models import Sudoku
 
 
 class EventParams(TypedDict):
@@ -41,9 +44,11 @@ class SudokuStatusConsumer(AsyncJsonWebsocketConsumer):
         """
         type_ = content.get("type")
         sudoku_id = content.get("sudoku_id")
-        status = content.get("status")
 
-        if type_ == "get_status" and sudoku_id and status:
+        if type_ == "get_status" and sudoku_id:
+            sudoku = sync_to_async(Sudoku.objects.get)(id=sudoku_id)
+            status = sudoku.status
+
             await self.send_json(
                 {
                     "type": "status_update",
