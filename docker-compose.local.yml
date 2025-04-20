@@ -20,9 +20,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - local-postgres-data:${PGDATA}
+      - local-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: ["CMD", "./postgres-healthcheck.sh"]
       interval: 30s
       timeout: 10s
       retries: 5
