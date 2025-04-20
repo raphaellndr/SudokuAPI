@@ -49,7 +49,6 @@ services:
       - .envs/.local/.django
       - .envs/.local/.postgres
       - .envs/.local/.redis
-      - .envs/.env
 
   celery_worker:
     <<: *web
