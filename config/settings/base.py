@@ -9,7 +9,7 @@ env = environ.Env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-env.read_env(Path().joinpath(BASE_DIR, ".envs/.env"))  # type: ignore
+env.read_env(Path().joinpath(BASE_DIR, ".env"))  # type: ignore
 
 
 # Application definition
