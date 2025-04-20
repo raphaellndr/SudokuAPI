@@ -27,7 +27,7 @@ services:
       timeout: 10s
       retries: 5
     env_file:
-      - ./.envs/.production/.postgres
+      - .envs/.production/.postgres
 
   web: &web
     restart: unless-stopped
@@ -46,10 +46,10 @@ services:
       postgres:
         condition: service_healthy
     env_file:
-      - ./.envs/.production/.django
-      - ./.envs/.production/.postgres
-      - ./.envs/.production/.redis
-      - ./.envs/.env
+      - .envs/.production/.django
+      - .envs/.production/.postgres
+      - .envs/.production/.redis
+      - .envs/.env
 
   celery_worker:
     <<: *web
