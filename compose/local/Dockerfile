@@ -35,8 +35,7 @@ COPY pyproject.toml poetry.lock pytest.ini manage.py README.md ./
 COPY app ./app/
 COPY config ./config/
 COPY tests ./tests/
-COPY compose/local/celery/* compose/local/postgres/* compose/local/entrypoint.sh ./
-COPY compose/local/postgres/healthcheck.sh  ./postgres-healthcheck.sh
+COPY compose/local/celery/* compose/local/entrypoint.sh ./
 
 # Bundle dependencies into a virtual environment
 RUN poetry bundle venv /venv --with dev
@@ -67,10 +66,7 @@ COPY --from=builder /venv /venv
 COPY --from=builder /src .
 
 RUN sed -i 's/\r$//g' ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh 
-
-RUN sed -i 's/\r$//g' ./postgres-healthcheck.sh
-RUN chmod +x ./postgres-healthcheck.sh 
+RUN chmod +x ./entrypoint.sh
 
 RUN sed -i 's/\r$//g' ./worker-entrypoint.sh
 RUN chmod +x ./worker-entrypoint.sh
