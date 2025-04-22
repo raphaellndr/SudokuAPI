@@ -4,7 +4,6 @@ POSTGRES_PORT=5432
 POSTGRES_DB=sudoku_prod
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=!!! SET POSTGRES_PASSWORD !!!
-PGDATA=/var/lib/postgresql/data
 
 # Locale settings
 LANG=en_US.utf8
