@@ -3,7 +3,7 @@
 set -o errexit
 set -o nounset
 
-until python3 manage.py migrate --fake-initial
+until python3 manage.py makemigrations && python3 manage.py migrate --fake-initial
 do
     echo "Waiting for db to be ready..."
     sleep 2
