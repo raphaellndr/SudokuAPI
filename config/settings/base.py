@@ -1,16 +1,9 @@
 """Base settings to build other settings files (local, production) upon."""
 
-from pathlib import Path
-
 import environ
 from celery.schedules import crontab
 
 env = environ.Env()
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-env.read_env(Path().joinpath(BASE_DIR, ".env"))  # type: ignore
-
 
 # Application definition
 
