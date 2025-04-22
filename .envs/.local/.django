@@ -1,2 +1,6 @@
 # Django environment settings for local development
 DJANGO_SETTINGS_MODULE=config.settings.local
+
+# Google OAuth2 settings
+GOOGLE_CLIENT_ID=!!! SET GOOGLE_CLIENT_ID !!!
+GOOGLE_SECRET=!!! SET GOOGLE_SECRET !!!

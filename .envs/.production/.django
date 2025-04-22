@@ -1,4 +1,8 @@
 # Django environment settings for production
-DJANGO_SECRET_KEY=!!! SET THIS TO A SECRET KEY !!!
+DJANGO_SECRET_KEY=uuw^7nba^-y+yc2wxi=ivi)ccw^kk1(iyr7gt9%7mix%4%ib0x
 DJANGO_SETTINGS_MODULE=config.settings.production
 DJANGO_ALLOWED_HOSTS=localhost,0.0.0.0,127.0.0.1
+
+# Google OAuth2 settings
+GOOGLE_CLIENT_ID=!!! SET GOOGLE_CLIENT_ID !!!
+GOOGLE_SECRET=!!! SET GOOGLE_SECRET !!!
