@@ -30,13 +30,3 @@ repos:
     #   types: [python]
     #   additional_dependencies:
     #     - django-stubs
-
-    # Testing
-
-    - id: django-pytest
-      name: django-pytest
-      language: python
-      entry: pytest
-      pass_filenames: false
-      always_run: true
-      types: [python]
