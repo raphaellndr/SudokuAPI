@@ -16,7 +16,7 @@ services:
   postgres:
     restart: unless-stopped
     image: postgres:17-alpine
-    container_name: postgres-local
+    container_name: local-postgres
     ports:
       - "5432:5432"
     volumes:
