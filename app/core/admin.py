@@ -94,6 +94,6 @@ class UserStatsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(UserStatsAdmin)
+admin.site.register(UserStats, UserStatsAdmin)
 admin.site.register(Sudoku)
 admin.site.register(SudokuSolution)
