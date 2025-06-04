@@ -29,6 +29,7 @@ urlpatterns: list[URLResolver | URLPattern] = [
         name="api-docs",
     ),
     path("api/auth/", include("app.authentication.urls")),
+    path("api/user/", include("app.user.urls")),
     path("api/sudokus/", include("app.sudoku.urls")),
     path("accounts/", include("allauth.urls")),
 ]
