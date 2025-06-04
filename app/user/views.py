@@ -60,10 +60,8 @@ class UserStatsViewSet(ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_user_stats(self) -> UserStats:
-        """Gets or creates user stats for the authenticated user."""
-        user = self.request.user
-        stats, created = UserStats.objects.get_or_create(user=user)
-        return stats
+        """Get user stats for the authenticated user."""
+        return self.request.user.stats
 
     @action(detail=False, methods=["get"])
     def overview(self, request) -> Response:
