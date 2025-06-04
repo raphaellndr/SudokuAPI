@@ -258,16 +258,5 @@ class UserStatsViewSet(ViewSet):
         serializer = DailyUserStatsSerializer(today_stats)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"])
-    def refresh_aggregated(self, request) -> Response:
-        """Manually refreshes aggregated statistics from daily stats."""
-        user_stats = self.get_user_stats()
-        user_stats.update_from_daily_stats()
-
-        serializer = UserStatsSerializer(user_stats)
-        return Response(
-            {"message": "Aggregated stats refreshed successfully", "stats": serializer.data}
-        )
-
 
 __all__ = ["ManageUserView", "UserStatsViewSet", "UserWithStatsView"]
