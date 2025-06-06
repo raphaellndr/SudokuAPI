@@ -7,7 +7,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from app.core.base import TimestampedMixin
+from app.core.models import TimestampedMixin
 
 from .choices import SudokuDifficultyChoices, SudokuStatusChoices
 
@@ -25,7 +25,7 @@ class Sudoku(TimestampedMixin):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="created_sudokus",
-        verbose_name=_("creator"),
+        verbose_name=_("player"),
         null=True,
     )
     title = models.CharField(

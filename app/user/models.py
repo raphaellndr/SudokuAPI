@@ -1,14 +1,15 @@
 """User models."""
 
 import uuid
-from datetime import date
 from typing import Any
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Avg, Count, Max, Min, Q, Sum
 from django.utils.translation import gettext_lazy as _
 
-from app.core.base import TimestampedMixin
+from app.core.models import TimestampedMixin
 
 
 class _UserManager(BaseUserManager["User"]):
@@ -96,137 +97,229 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
 
 
 class UserStats(TimestampedMixin):
-    """Model to store user game statistics (aggregated)."""
+    """Model to store user statistics for caching purposes."""
 
-    id = models.UUIDField(
-        _("user stats identifier"),
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="stats", verbose_name=_("user")
+        User,
+        on_delete=models.CASCADE,
+        related_name="stats",
+        verbose_name=_("user"),
     )
-    games_played = models.PositiveIntegerField(_("games played"), default=0)
-    games_won = models.PositiveIntegerField(_("games won"), default=0)
-    games_lost = models.PositiveIntegerField(_("games lost"), default=0)
-    total_time_seconds = models.PositiveIntegerField(_("total time in seconds"), default=0)
-    best_time_seconds = models.PositiveIntegerField(
-        _("best time in seconds"), null=True, blank=True
+
+    # Game counts
+    total_games = models.IntegerField(
+        _("total games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games played by the user."),
+    )
+    completed_games = models.IntegerField(
+        _("completed games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games completed by the user."),
+    )
+    abandoned_games = models.IntegerField(
+        _("abandoned games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games abandoned by the user."),
+    )
+    stopped_games = models.IntegerField(
+        _("stopped games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games stopped by the user."),
+    )
+    in_progress_games = models.IntegerField(
+        _("in progress games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games in progress."),
+    )
+    won_games = models.IntegerField(
+        _("won games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games won by the user."),
+    )
+    lost_games = models.IntegerField(
+        _("lost games"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of games played by the user."),
+    )
+
+    # Performance metrics
+    win_rate = models.FloatField(
+        _("win rate"),
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text=["Player's win rate."],
+    )
+    total_time_seconds = models.IntegerField(
+        _("total time (seconds)"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total time spent by the user across all games in seconds."),
+    )
+    average_time_seconds = models.IntegerField(
+        _("average time (seconds)"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text=_("Average time spent by the user across all games in seconds."),
+    )
+    best_time_seconds = models.IntegerField(
+        _("best time (seconds)"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text=_("Best time spent by the user across all games in seconds."),
+    )
+    total_score = models.IntegerField(
+        _("total score"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total score achieved by the user across all games."),
+    )
+    average_score = models.FloatField(
+        _("average score"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0)],
+        help_text=_("Average score achieved by the user across all games."),
+    )
+    best_score = models.IntegerField(
+        _("best score"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text=_("Best score achieved by the user across all games."),
+    )
+
+    # Game interaction metrics
+    total_hints_used = models.IntegerField(
+        _("total hints used"),
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text=_("Total number of hints used by the user across all games."),
+    )
+    total_checks_used = models.IntegerField(
+        _("total checks used"),
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text=_("Total number of checks used by the user across all games."),
+    )
+    total_deletions = models.IntegerField(
+        _("total deletions"),
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_("Total number of deletions made by the user across all games."),
     )
 
     class Meta:
-        verbose_name = _("user statistics")
-        verbose_name_plural = _("user statistics")
+        """Meta class for the UserStats model."""
 
-    def __str__(self) -> str:
-        return f"Stats for {self.user.email}"
+        verbose_name = _("user stats")
+        verbose_name_plural = _("user stats")
 
-    @property
-    def win_rate(self) -> float:
-        """Calculates win rate as percentage."""
-        if self.games_played == 0:
-            return 0.0
-        return (self.games_won / self.games_played) * 100
+    def recalculate_from_games(self):
+        """Recalculate all statistics from game records."""
+        from app.game_record.choices import GameStatusChoices
+        from app.game_record.models import GameRecord
 
-    @property
-    def average_time_seconds(self) -> float:
-        """Calculates average time per game."""
-        if self.games_played == 0:
-            return 0.0
-        return self.total_time_seconds / self.games_played
+        queryset = GameRecord.objects.filter(user=self.user)
 
-    def update_from_daily_stats(self) -> None:
-        """Update aggregated stats from daily stats."""
-        daily_stats = self.user.daily_stats.all()
+        if not queryset.exists():
+            # Reset to defaults
+            self.total_games = 0
+            self.completed_games = 0
+            self.abandoned_games = 0
+            self.stopped_games = 0
+            self.in_progress_games = 0
+            self.won_games = 0
+            self.lost_games = 0
+            self.win_rate = 0.0
+            self.total_time_seconds = 0
+            self.average_time_seconds = None
+            self.best_time_seconds = None
+            self.total_score = 0
+            self.average_score = None
+            self.best_score = None
+            self.total_hints_used = 0
+            self.total_checks_used = 0
+            self.total_deletions = 0
+            self.save()
+            return
 
-        self.games_played = sum(ds.games_played for ds in daily_stats)
-        self.games_won = sum(ds.games_won for ds in daily_stats)
-        self.games_lost = sum(ds.games_lost for ds in daily_stats)
-        self.total_time_seconds = sum(ds.total_time_seconds for ds in daily_stats)
+        # Calculate aggregated statistics
+        stats = queryset.aggregate(
+            total_games=Count("id"),
+            won_games=Count("id", filter=Q(won=True)),
+            lost_games=Count("id", filter=Q(won=False)),
+            completed_games=Count("id", filter=Q(status=GameStatusChoices.COMPLETED)),
+            abandoned_games=Count("id", filter=Q(status=GameStatusChoices.ABANDONED)),
+            stopped_games=Count("id", filter=Q(status=GameStatusChoices.STOPPED)),
+            in_progress_games=Count("id", filter=Q(status=GameStatusChoices.IN_PROGRESS)),
+            total_time_seconds=Sum("time_taken"),
+            average_time_seconds=Avg("time_taken"),
+            best_time_seconds=Min("time_taken"),
+            total_score=Sum("score"),
+            average_score=Avg("score"),
+            best_score=Max("score"),
+            total_hints_used=Sum("hints_used"),
+            total_checks_used=Sum("checks_used"),
+            total_deletions=Sum("deletions"),
+        )
 
-        # Get best time across all days
-        best_times = [ds.best_time_seconds for ds in daily_stats if ds.best_time_seconds]
-        self.best_time_seconds = min(best_times) if best_times else None
+        # Update fields
+        self.total_games = stats["total_games"]
+        self.won_games = stats["won_games"]
+        self.lost_games = stats["lost_games"]
+        self.completed_games = stats["completed_games"]
+        self.abandoned_games = stats["abandoned_games"]
+        self.stopped_games = stats["stopped_games"]
+        self.in_progress_games = stats["in_progress_games"]
+
+        # Calculate win rate
+        self.win_rate = round(self.won_games / self.total_games, 3) if self.total_games > 0 else 0.0
+
+        # Handle time fields
+        if stats["total_time_seconds"]:
+            self.total_time_seconds = int(stats["total_time_seconds"].total_seconds())
+        else:
+            self.total_time_seconds = 0
+
+        if stats["average_time_seconds"]:
+            self.average_time_seconds = int(stats["average_time_seconds"].total_seconds())
+        else:
+            self.average_time_seconds = None
+
+        if stats["best_time_seconds"]:
+            self.best_time_seconds = int(stats["best_time_seconds"].total_seconds())
+        else:
+            self.best_time_seconds = None
+
+        # Handle score fields
+        self.total_score = stats["total_score"] or 0
+        self.average_score = round(stats["average_score"], 2) if stats["average_score"] else None
+        self.best_score = stats["best_score"] or 0
+
+        # Handle interaction metrics
+        self.total_hints_used = stats["total_hints_used"] or 0
+        self.total_checks_used = stats["total_checks_used"] or 0
+        self.total_deletions = stats["total_deletions"] or 0
 
         self.save()
-
-
-class DailyUserStats(TimestampedMixin):
-    """Model to store daily user game statistics."""
-
-    id = models.UUIDField(
-        _("daily stats identifier"),
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="daily_stats", verbose_name=_("user")
-    )
-    date = models.DateField(_("date"), default=date.today)
-    games_played = models.PositiveIntegerField(_("games played"), default=0)
-    games_won = models.PositiveIntegerField(_("games won"), default=0)
-    games_lost = models.PositiveIntegerField(_("games lost"), default=0)
-    total_time_seconds = models.PositiveIntegerField(_("total time in seconds"), default=0)
-    best_time_seconds = models.PositiveIntegerField(
-        _("best time in seconds"), null=True, blank=True
-    )
-
-    class Meta:
-        verbose_name = _("daily user statistics")
-        verbose_name_plural = _("daily user statistics")
-        unique_together = ["user", "date"]  # One record per user per day
-        ordering = ["-date"]
-
-    def __str__(self) -> str:
-        return f"Stats for {self.user.email} on {self.date}"
-
-    @property
-    def win_rate(self) -> float:
-        """Calculates win rate as percentage."""
-        if self.games_played == 0:
-            return 0.0
-        return (self.games_won / self.games_played) * 100
-
-    @property
-    def average_time_seconds(self) -> float:
-        """Calculates average time per game."""
-        if self.games_played == 0:
-            return 0.0
-        return self.total_time_seconds / self.games_played
 
     @classmethod
-    def get_or_create_today(cls, user: User) -> "DailyUserStats":
-        """Get or create today's stats for a user."""
-        today = date.today()
-        daily_stats, created = cls.objects.get_or_create(
-            user=user,
-            date=today,
-            defaults={
-                "games_played": 0,
-                "games_won": 0,
-                "games_lost": 0,
-                "total_time_seconds": 0,
-            },
-        )
-        return daily_stats
-
-    def record_game(self, won: bool, time_seconds: int) -> None:
-        """Record a game result for this day."""
-        self.games_played += 1
-        if won:
-            self.games_won += 1
-        else:
-            self.games_lost += 1
-
-        self.total_time_seconds += time_seconds
-
-        # Update best time if this is better
-        if self.best_time_seconds is None or time_seconds < self.best_time_seconds:
-            self.best_time_seconds = time_seconds
-
-        self.save()
+    def get_or_create_for_user(cls, user):
+        """Get or create UserStats for a user."""
+        stats, created = cls.objects.get_or_create(user=user)
+        if created:
+            stats.recalculate_from_games()
+        return stats
 
 
-__all__ = ["DailyUserStats", "User", "UserStats"]
+__all__ = ["GameRecord", "User", "UserStats"]

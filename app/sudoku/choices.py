@@ -3,19 +3,10 @@
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
 
-
-class _ExtendedTextChoicesMeta(type(TextChoices)):  # type: ignore
-    """Metaclass for `_ExtendedTextChoices` to dynamically compute `max_length` when defining
-    the class.
-    """
-
-    @property
-    def max_length(cls) -> int:
-        """Returns the maximum length."""
-        return max(len(value) for value in cls.values)
+from app.core.choices import ExtendedTextChoicesMeta
 
 
-class SudokuDifficultyChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
+class SudokuDifficultyChoices(TextChoices, metaclass=ExtendedTextChoicesMeta):
     """Sudoku difficulties enum."""
 
     UNKNOWN = "unknown", _("Unknown")
@@ -24,7 +15,7 @@ class SudokuDifficultyChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
     HARD = "hard", _("Hard")
 
 
-class SudokuStatusChoices(TextChoices, metaclass=_ExtendedTextChoicesMeta):
+class SudokuStatusChoices(TextChoices, metaclass=ExtendedTextChoicesMeta):
     """Sudoku statuses enum."""
 
     CREATED = "created", _("Created")

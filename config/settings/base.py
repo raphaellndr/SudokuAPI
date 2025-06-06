@@ -36,6 +36,7 @@ LOCAL_APPS = [
     "app.authentication",
     "app.user",
     "app.sudoku",
+    "app.game_record",
 ]
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -83,16 +84,31 @@ CORS_ALLOWED_ORIGINS = [
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "HOST": env("POSTGRES_HOST"),
-        "PORT": env("POSTGRES_PORT"),
-        "NAME": env("POSTGRES_DB"),
-        "USER": env("POSTGRES_USER"),
-        "PASSWORD": env("POSTGRES_PASSWORD"),
+# Try to read from your existing env files structure first
+try:
+    # Your existing database configuration
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "HOST": env("POSTGRES_HOST"),
+            "PORT": env("POSTGRES_PORT"),
+            "NAME": env("POSTGRES_DB"),
+            "USER": env("POSTGRES_USER"),
+            "PASSWORD": env("POSTGRES_PASSWORD"),
+        }
     }
-}
+except environ.ImproperlyConfigured:
+    # Fallback to SQLite for local development
+    from pathlib import Path
+
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
@@ -200,8 +216,8 @@ REST_AUTH = {
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": env("GOOGLE_CLIENT_ID"),
-            "secret": env("GOOGLE_SECRET"),
+            "client_id": env("GOOGLE_CLIENT_ID", default="!!!S ET GOOGLE_CLIENT_ID !!!"),
+            "secret": env("GOOGLE_SECRET", default="!!! SET GOOGLE_SECRET !!!"),
             "key": "",
         },
         "SCOPE": ["profile", "email"],
@@ -213,8 +229,14 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Celery settings
 
-CELERY_BROKER_URL = env("REDIS_URL")
-CELERY_RESULT_BACKEND = env("REDIS_URL")
+try:
+    CELERY_BROKER_URL = env("REDIS_URL")
+    CELERY_RESULT_BACKEND = env("REDIS_URL")
+except environ.ImproperlyConfigured:
+    # Use memory transport for local commands
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
+
 CELERY_BEAT_SCHEDULE = {
     "cleanup-anonymous-sudokus": {
         "task": "app.sudoku.tasks.cleanup_anonymous_sudokus",
@@ -231,7 +253,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [env("REDIS_URL")],
+            "hosts": [CELERY_BROKER_URL],
         },
     },
 }

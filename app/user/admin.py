@@ -1,10 +1,9 @@
-"""Django admin configuration for core app."""
+"""Django admin configuration for user app."""
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from app.sudoku.models import Sudoku, SudokuSolution
 from app.user.models import User, UserStats
 
 
@@ -71,29 +70,4 @@ class UserAdmin(BaseUserAdmin):  # type: ignore
     readonly_fields = ["created_at", "updated_at", "last_login"]
 
 
-class UserStatsAdmin(admin.ModelAdmin):
-    """UserStats admin."""
-
-    list_display = (
-        "user",
-        "games_played",
-        "games_won",
-        "games_lost",
-        "win_rate",
-        "best_time_seconds",
-    )
-    list_filter = ("created_at", "updated_at")
-    search_fields = ("user__email", "user__username")
-    readonly_fields = ("created_at", "updated_at", "win_rate", "average_time_seconds")
-
-    def win_rate(self, obj):
-        """Display win rate with percentage."""
-        return f"{obj.win_rate:.1f}%"
-
-    win_rate.short_description = "Win Rate"
-
-
 admin.site.register(User, UserAdmin)
-admin.site.register(UserStats, UserStatsAdmin)
-admin.site.register(Sudoku)
-admin.site.register(SudokuSolution)
