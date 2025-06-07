@@ -30,6 +30,7 @@ urlpatterns: list[URLResolver | URLPattern] = [
     ),
     path("api/auth/", include("app.authentication.urls")),
     path("api/users/", include("app.user.urls")),
+    path("api/games/", include("app.game_record.urls")),
     path("api/sudokus/", include("app.sudoku.urls")),
     path("accounts/", include("allauth.urls")),
 ]
