@@ -225,7 +225,7 @@ class UserStats(TimestampedMixin):
         verbose_name_plural = _("user stats")
 
     def recalculate_from_games(self):
-        """Recalculate all statistics from game records."""
+        """Recalculates all statistics from game records."""
         from app.game_record.choices import GameStatusChoices
         from app.game_record.models import GameRecord
 
@@ -315,7 +315,7 @@ class UserStats(TimestampedMixin):
 
     @classmethod
     def get_or_create_for_user(cls, user):
-        """Get or create UserStats for a user."""
+        """Gets or creates UserStats for a user."""
         stats, created = cls.objects.get_or_create(user=user)
         if created:
             stats.recalculate_from_games()
