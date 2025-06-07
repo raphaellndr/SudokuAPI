@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from app.user.views import ManageUserView, UserStatsViewSet, UserMeStatsView
+from app.user.views import ManageUserView, UserMeStatsView, UserStatsViewSet
 
 app_name = "users"
 
@@ -10,7 +10,6 @@ urlpatterns = [
     # Current user endpoint
     path("me/", ManageUserView.as_view(), name="me"),
     path("me/stats/refresh/", UserMeStatsView.as_view(), name="me-stats-refresh"),
-    
     # User-specific stats endpoints
     path(
         "<uuid:pk>/stats/",

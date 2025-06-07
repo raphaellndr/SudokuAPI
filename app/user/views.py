@@ -25,9 +25,8 @@ from app.user.serializers import (
     LeaderboardSerializer,
     UserSerializer,
 )
-
-
 from app.user.tasks import refresh_user_stats
+
 from .models import User, UserStats
 
 
@@ -52,35 +51,35 @@ class ManageUserView(generics.RetrieveUpdateAPIView[User]):
         :return: User.
         """
         return self.request.user  # type: ignore
-    
+
 
 class UserMeStatsView(generics.GenericAPIView):
     """View for current user's stats operations."""
-    
+
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request: Request) -> Response:
         """Refresh current user's statistics."""
         user = request.user
-        
+
         try:
             task = refresh_user_stats.delay(str(user.id))
-            
+
             # Clear the cache for this user's stats
             cache_key = f"user_stats_{user.id}"
             cache.delete(cache_key)
-            
+
             return Response(
                 {
                     "message": "Your stats refresh has been initiated",
                     "task_id": task.id,
-                    "user_id": str(user.id)
+                    "user_id": str(user.id),
                 },
                 status=status.HTTP_202_ACCEPTED,
             )
         except Exception as e:
             return Response(
-                {"error": f"Failed to initiate stats refresh: {str(e)}"},
+                {"error": f"Failed to initiate stats refresh: {e!s}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
