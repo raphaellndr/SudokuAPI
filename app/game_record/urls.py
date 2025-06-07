@@ -8,7 +8,7 @@ from app.game_record.views import GameRecordViewSet
 app_name = "game_records"
 
 router = DefaultRouter()
-router.register(r"games", GameRecordViewSet, basename="game-records")
+router.register(r"", GameRecordViewSet, basename="game-records")
 
 urlpatterns = [
     path("", include(router.urls)),
