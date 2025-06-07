@@ -243,6 +243,10 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(hour="*/4", minute=0),  # Run every 4 hours
         "kwargs": {"hours": 24},  # Delete anonymous sudokus older than 24 hours
     },
+    "refresh-all-user-stats-daily": {
+        "task": "app.user.tasks.refresh_all_user_stats",
+        "schedule": crontab(hour=2, minute=0),  # Run daily at 2:00 AM
+    },
 }
 
 
