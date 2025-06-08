@@ -79,9 +79,9 @@ class GameRecord(TimestampedMixin):
         ],
         help_text=_("Amount of times a user deleted a cell during the game"),
     )
-    time_taken = models.DurationField(
-        _("time taken"),
-        help_text=_("Total time taken to complete the game"),
+    time_taken = models.IntegerField(
+        _("time taken (seconds)"),
+        help_text=_("Total time taken to complete the game in seconds"),
     )
     won = models.BooleanField(
         _("won"),
@@ -175,7 +175,7 @@ class GameRecord(TimestampedMixin):
         hints_penalty = self.hints_used * 100
         checks_penalty = self.checks_used * 50
         deletions_penalty = self.deletions * 5
-        time_penalty = int(self.time_taken.total_seconds() // 60) * 15
+        time_penalty = int(self.time_taken // 60) * 15
 
         score = base_score - hints_penalty - checks_penalty - deletions_penalty - time_penalty
         return max(score, 0)

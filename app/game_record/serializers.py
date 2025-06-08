@@ -7,12 +7,11 @@ from rest_framework import serializers
 from .models import GameRecord
 
 
-class GameRecordSerializer(serializers.ModelSerializer[GameRecord]):
+class GameRecordSerializer(serializers.ModelSerializer):
     """GameRecord serializer."""
 
     user_id = serializers.UUIDField(source="user.id", read_only=True)
     sudoku_id = serializers.UUIDField(source="sudoku.id", read_only=True, allow_null=True)
-    time_taken_seconds = serializers.SerializerMethodField()
 
     class Meta:
         """Meta class for the GameRecord serializer."""
@@ -22,7 +21,6 @@ class GameRecordSerializer(serializers.ModelSerializer[GameRecord]):
             "id",
             "user_id",
             "sudoku_id",
-            "time_taken_seconds",
             "score",
             "hints_used",
             "checks_used",
@@ -42,16 +40,9 @@ class GameRecordSerializer(serializers.ModelSerializer[GameRecord]):
             "id",
             "user_id",
             "sudoku_id",
-            "time_taken_seconds",
             "created_at",
             "updated_at",
         ]
-
-    def get_time_taken_seconds(self, obj: GameRecord) -> int | None:
-        """Get time taken in seconds for easier frontend handling."""
-        if obj.time_taken:
-            return int(obj.time_taken.total_seconds())
-        return None
 
     def validate(self, data):
         """Validate game record data."""
@@ -60,7 +51,8 @@ class GameRecordSerializer(serializers.ModelSerializer[GameRecord]):
 
         # Calculate time_taken if completed
         if data.get("completed_at") and data.get("started_at"):
-            data["time_taken"] = data["completed_at"] - data["started_at"]
+            time_taken = data["completed_at"] - data["started_at"]
+            data["time_taken"] = int(time_taken.total_seconds())
 
         return data
 
