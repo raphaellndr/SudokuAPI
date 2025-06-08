@@ -8,13 +8,16 @@ from .models import User, UserStats
 
 
 class UserStatsSerializer(serializers.ModelSerializer):
-    """`UserStats` serializer."""
+    """UserStats serializer."""
+
+    user_id = serializers.UUIDField(source="user.id", read_only=True)
 
     class Meta:
         """Meta class for the UserStats serializer."""
 
         model = UserStats
         fields = [
+            "user_id",
             "total_games",
             "completed_games",
             "abandoned_games",
@@ -26,6 +29,7 @@ class UserStatsSerializer(serializers.ModelSerializer):
             "total_time_seconds",
             "average_time_seconds",
             "best_time_seconds",
+            "total_score",
             "average_score",
             "best_score",
             "total_hints_used",
