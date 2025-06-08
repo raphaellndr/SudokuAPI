@@ -165,17 +165,9 @@ class UserStatsViewSet(viewsets.ViewSet):
         win_rate = stats["won_games"] / stats["total_games"] if stats["total_games"] > 0 else 0.0
 
         # Convert time durations to seconds
-        total_time_seconds = 0
-        if stats["total_time_seconds"]:
-            total_time_seconds = int(stats["total_time_seconds"].total_seconds())
-
-        average_time_seconds = None
-        if stats["average_time_seconds"]:
-            average_time_seconds = int(stats["average_time_seconds"].total_seconds())
-
-        best_time_seconds = None
-        if stats["best_time_seconds"]:
-            best_time_seconds = int(stats["best_time_seconds"].total_seconds())
+        total_time_seconds = stats["total_time_seconds"] or 0
+        average_time_seconds = stats["average_time_seconds"] or None
+        best_time_seconds = stats["best_time_seconds"] or None
 
         return {
             "total_games": stats["total_games"],

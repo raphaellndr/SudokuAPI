@@ -286,20 +286,9 @@ class UserStats(TimestampedMixin):
         self.win_rate = round(self.won_games / self.total_games, 3) if self.total_games > 0 else 0.0
 
         # Handle time fields
-        if stats["total_time_seconds"]:
-            self.total_time_seconds = int(stats["total_time_seconds"].total_seconds())
-        else:
-            self.total_time_seconds = 0
-
-        if stats["average_time_seconds"]:
-            self.average_time_seconds = int(stats["average_time_seconds"].total_seconds())
-        else:
-            self.average_time_seconds = None
-
-        if stats["best_time_seconds"]:
-            self.best_time_seconds = int(stats["best_time_seconds"].total_seconds())
-        else:
-            self.best_time_seconds = None
+        self.total_time_seconds = stats["total_time_seconds"] or 0
+        self.average_time_seconds = stats["average_time_seconds"] or None
+        self.best_time_seconds = stats["best_time_seconds"] or None
 
         # Handle score fields
         self.total_score = stats["total_score"] or 0
