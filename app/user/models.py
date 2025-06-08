@@ -99,6 +99,12 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedMixin):
 class UserStats(TimestampedMixin):
     """Model to store user statistics for caching purposes."""
 
+    id = models.UUIDField(
+        _("user stats identifier"),
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
