@@ -169,11 +169,11 @@ class UserStats(TimestampedMixin):
         validators=[MinValueValidator(0)],
         help_text=_("Total time spent by the user across all games in seconds."),
     )
-    average_time_seconds = models.IntegerField(
+    average_time_seconds = models.FloatField(
         _("average time (seconds)"),
         null=True,
         blank=True,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(0.0)],
         help_text=_("Average time spent by the user across all games in seconds."),
     )
     best_time_seconds = models.IntegerField(
