@@ -10,7 +10,6 @@ urlpatterns = [
     # Current user endpoint
     path("me/", ManageUserView.as_view(), name="me"),
     path("me/stats/refresh/", UserMeStatsView.as_view(), name="me-stats-refresh"),
-    
     # Current user stats endpoints (using "me" as identifier)
     path(
         "me/stats/",
@@ -42,7 +41,6 @@ urlpatterns = [
         UserStatsViewSet.as_view({"get": "games"}),
         name="me-games",
     ),
-    
     # User-specific stats endpoints (using UUID)
     path(
         "<uuid:pk>/stats/",
@@ -74,7 +72,6 @@ urlpatterns = [
         UserStatsViewSet.as_view({"get": "games"}),
         name="user-games",
     ),
-    
     # Public/leaderboard endpoints
     path(
         "stats/leaderboard/",
