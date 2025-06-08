@@ -81,6 +81,9 @@ class GameRecord(TimestampedMixin):
     )
     time_taken = models.IntegerField(
         _("time taken (seconds)"),
+        validators=[
+            MinValueValidator(0, _("Time taken made cannot be negative")),
+        ],
         help_text=_("Total time taken to complete the game in seconds"),
     )
     won = models.BooleanField(
