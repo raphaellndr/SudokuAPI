@@ -11,6 +11,7 @@ from django.core.validators import (
     MinValueValidator,
 )
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from app.core.models import TimestampedMixin
@@ -179,6 +180,15 @@ class GameRecord(TimestampedMixin):
         score = base_score - hints_penalty - checks_penalty - deletions_penalty - time_penalty
         return max(score, 0)
 
+    def clean(self):
+        super().clean()
+
+        expected_score = self.calculate_score()
+        if self.score != expected_score:
+            raise ValidationError(
+                _("Score does not match the calculated score based on game performance.")
+            )
+
     def save(self, *args, **kwargs):
         """Overrides save method to compute score before saving."""
         if self.status == GameStatusChoices.COMPLETED:
@@ -188,6 +198,7 @@ class GameRecord(TimestampedMixin):
         cache.delete(f"user_stats_{self.user.id}")
         cache.delete("leaderboard")
 
+        self.full_clean()
         super().save(*args, **kwargs)
 
 
