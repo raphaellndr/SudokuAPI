@@ -15,37 +15,37 @@ urlpatterns = [
         "me/stats/",
         UserStatsViewSet.as_view({"get": "stats"}),
         name="me-stats",
-        kwargs={"pk": "me"}
+        kwargs={"pk": "me"},
     ),
     path(
         "me/stats/daily/",
         UserStatsViewSet.as_view({"get": "daily_stats"}),
         name="me-daily-stats",
-        kwargs={"pk": "me"}
+        kwargs={"pk": "me"},
     ),
     path(
         "me/stats/weekly/",
         UserStatsViewSet.as_view({"get": "weekly_stats"}),
         name="me-weekly-stats",
-        kwargs={"pk": "me"}
+        kwargs={"pk": "me"},
     ),
     path(
         "me/stats/monthly/",
         UserStatsViewSet.as_view({"get": "monthly_stats"}),
         name="me-monthly-stats",
-        kwargs={"pk": "me"}
+        kwargs={"pk": "me"},
     ),
     path(
         "me/stats/yearly/",
         UserStatsViewSet.as_view({"get": "yearly_stats"}),
         name="me-yearly-stats",
-        kwargs={"pk": "me"}
+        kwargs={"pk": "me"},
     ),
     path(
         "me/games/",
         UserStatsViewSet.as_view({"get": "games"}),
         name="me-games",
-        kwargs={"pk": "me"}
+        kwargs={"pk": "me"},
     ),
     # User-specific stats endpoints (using UUID)
     path(
