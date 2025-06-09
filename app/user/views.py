@@ -1,11 +1,12 @@
 """Views for the user API."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any
 
 from django.core.cache import cache
 from django.db.models import Avg, Count, Max, Min, Q, Sum
 from django.db.models.query import QuerySet
+from django.utils import timezone
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
