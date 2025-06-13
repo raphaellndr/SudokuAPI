@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from app.user.views import ManageUserView, UserMeStatsView, UserStatsViewSet
+from app.user.views import ManageUserView, UserDetailView, UserMeStatsView, UserStatsViewSet
 
 app_name = "users"
 
@@ -48,6 +48,11 @@ urlpatterns = [
         kwargs={"pk": "me"},
     ),
     # User-specific stats endpoints (using UUID)
+    path(
+        "<uuid:pk>/",
+        UserDetailView.as_view(),
+        name="user-detail",
+    ),
     path(
         "<uuid:pk>/stats/",
         UserStatsViewSet.as_view({"get": "stats"}),
