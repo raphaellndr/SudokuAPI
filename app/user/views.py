@@ -1,5 +1,6 @@
 """Views for the user API."""
 
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -54,6 +55,28 @@ class ManageUserView(generics.RetrieveUpdateAPIView[User]):
         return self.request.user  # type: ignore
 
 
+class UserDetailView(generics.RetrieveAPIView[User]):
+    """Retrieve user information by ID."""
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "id"
+
+    def get_object(self) -> User:
+        """Retrieves and returns the user by ID.
+
+        :return: User.
+        :raises: NotFound if user doesn't exist.
+        """
+        user_id = self.kwargs.get("id")
+
+        try:
+            return User.objects.get(id=user_id, is_active=True)
+        except User.DoesNotExist:
+            raise NotFound("User not found")
+
+
 class UserMeStatsView(generics.GenericAPIView):
     """View for current user's stats operations."""
 
@@ -88,8 +111,18 @@ class UserMeStatsView(generics.GenericAPIView):
 class UserStatsViewSet(viewsets.ViewSet):
     """ViewSet to retrieve user statistics."""
 
-    permission_classes = [permissions.IsAuthenticated]
     pagination_class = StandardResultsSetPagination
+
+    def get_permissions(self) -> Sequence[permissions.BasePermission]:
+        """Returns custom permissions based on the action.
+
+        - Anonymous users can access create, retrieve, list, solve, abort, solution,
+        delete_solution and status endpoints.
+        - Only authenticated users can access update, partial_update and destroy
+        """
+        if self.action == "leaderboard":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         return GameRecord.objects.filter(user=self.request.user)
@@ -140,7 +173,7 @@ class UserStatsViewSet(viewsets.ViewSet):
     def _calculate_stats(self, queryset: QuerySet[GameRecord]) -> dict[str, Any]:
         """Calculates statistics from a queryset of game records."""
         if not queryset.exists():
-            self._empty_stats()
+            return self._empty_stats()
 
         # Single database query to get all aggregated data
         stats = queryset.aggregate(
@@ -165,11 +198,6 @@ class UserStatsViewSet(viewsets.ViewSet):
         # Win rate
         win_rate = stats["won_games"] / stats["total_games"] if stats["total_games"] > 0 else 0.0
 
-        # Convert time durations to seconds
-        total_time_seconds = stats["total_time_seconds"] or 0
-        average_time_seconds = stats["average_time_seconds"] or None
-        best_time_seconds = stats["best_time_seconds"] or None
-
         return {
             "total_games": stats["total_games"],
             "won_games": stats["won_games"],
@@ -179,11 +207,13 @@ class UserStatsViewSet(viewsets.ViewSet):
             "abandoned_games": stats["abandoned_games"],
             "stopped_games": stats["stopped_games"],
             "in_progress_games": stats["in_progress_games"],
-            "total_time_seconds": total_time_seconds,
-            "average_time_seconds": average_time_seconds,
-            "best_time_seconds": best_time_seconds,
+            "total_time_seconds": stats["total_time_seconds"],
+            "average_time_seconds": stats["average_time_seconds"],
+            "best_time_seconds": stats["best_time_seconds"],
             "total_score": stats["total_score"] or 0,
-            "average_score": round(stats["average_score"], 2) if stats["average_score"] else None,
+            "average_score": round(stats["average_score"], 2)
+            if stats["average_score"] is not None
+            else None,
             "best_score": stats["best_score"],
             "total_hints_used": stats["total_hints_used"] or 0,
             "total_checks_used": stats["total_checks_used"] or 0,
