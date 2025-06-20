@@ -293,7 +293,9 @@ class UserStats(TimestampedMixin):
 
         # Handle time fields
         self.total_time_seconds = stats["total_time_seconds"] or 0
-        self.average_time_seconds = stats["average_time_seconds"] or None
+        self.average_time_seconds = (
+            round(stats["average_time_seconds"], 2) if stats["average_time_seconds"] else None
+        )
         self.best_time_seconds = stats["best_time_seconds"] or None
 
         # Handle score fields

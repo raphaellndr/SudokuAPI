@@ -208,7 +208,9 @@ class UserStatsViewSet(viewsets.ViewSet):
             "stopped_games": stats["stopped_games"],
             "in_progress_games": stats["in_progress_games"],
             "total_time_seconds": stats["total_time_seconds"],
-            "average_time_seconds": stats["average_time_seconds"],
+            "average_time_seconds": round(stats["average_time_seconds"], 2)
+            if stats["average_time_seconds"] is not None
+            else None,
             "best_time_seconds": stats["best_time_seconds"],
             "total_score": stats["total_score"] or 0,
             "average_score": round(stats["average_score"], 2)
