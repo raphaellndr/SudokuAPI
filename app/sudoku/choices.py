@@ -27,4 +27,13 @@ class SudokuStatusChoices(TextChoices, metaclass=ExtendedTextChoicesMeta):
     INVALID = "invalid", _("Invalid")
 
 
-__all__ = ["SudokuDifficultyChoices", "SudokuStatusChoices"]
+class DetectionStatusChoices(TextChoices):
+    """Detection statuses enum."""
+
+    PENDING = "pending", _("Pending")
+    RUNNING = "running", _("Running")
+    COMPLETED = "completed", _("Completed")
+    FAILED = "failed", _("Failed")
+
+
+__all__ = ["DetectionStatusChoices", "SudokuDifficultyChoices", "SudokuStatusChoices"]
