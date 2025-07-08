@@ -20,13 +20,13 @@ WORKDIR /src
 
 # Update package lists and install system dependencies
 RUN apt-get update && apt-get install -y \
-        pipx \
-        git \
-        build-essential \
-        libpq-dev \
-        libffi-dev \
-        curl \
-        && rm -rf /var/lib/apt/lists/*
+    pipx \
+    git \
+    build-essential \
+    libpq-dev \
+    libffi-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install poetry with pipx and inject poetry-plugin-bundle
 RUN pipx install poetry==${POETRY_VERSION}
