@@ -3,7 +3,7 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
-from .choices import SudokuStatusChoices
+from .choices import DetectionStatusChoices, SudokuStatusChoices
 from .models import Sudoku
 
 
@@ -25,6 +25,22 @@ def update_sudoku_status(sudoku: Sudoku, status: SudokuStatusChoices) -> None:
         {
             "type": "status_update",
             "sudoku_id": str(sudoku.id),
+            "status": status,
+        },
+    )
+
+
+def update_sudoku_detection(status: DetectionStatusChoices) -> None:
+    """Sends sudoku detection status update via WebSocket.
+
+    :param status: current status for the Sudoku detection.
+    """
+    channel_layer = get_channel_layer()
+    room_group_name = "sudoku_detection_status"
+    async_to_sync(channel_layer.group_send)(
+        room_group_name,
+        {
+            "type": "detection_status_update",
             "status": status,
         },
     )
