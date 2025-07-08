@@ -10,16 +10,17 @@ from kombu.exceptions import OperationalError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, ModelSerializer
 
-from .base import update_sudoku_status
-from .choices import SudokuStatusChoices
+from .base import update_sudoku_detection, update_sudoku_status
+from .choices import DetectionStatusChoices, SudokuStatusChoices
 from .models import Sudoku
 from .serializers import AnonymousSudokuSerializer, SudokuSerializer, SudokuSolutionSerializer
-from .tasks import solve_sudoku
+from .tasks import detect_sudoku_digits, solve_sudoku
 
 
 def _check_sudoku_ownership(sudoku: Sudoku, request: Request) -> Response:
@@ -67,7 +68,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         """Returns custom permissions based on the action.
 
         - Anonymous users can access create, retrieve, list, solve, abort, solution,
-        delete_solution and status endpoints.
+        delete_solution, status and detect_digits endpoints.
         - Only authenticated users can access update, partial_update and destroy
         """
         if self.action in [
@@ -79,6 +80,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             "solution",
             "delete_solution",
             "status",
+            "detect_digits",
         ]:
             return [AllowAny()]
         return [IsAuthenticated()]
@@ -153,6 +155,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 }
             )
         except Exception as e:
+            update_sudoku_status(sudoku, SudokuStatusChoices.FAILED)
             return Response(
                 {"detail": f"Failed to start solving: {e!s}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -253,6 +256,54 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         _check_sudoku_ownership(sudoku, request)
 
         return Response({"sudoku_status": sudoku.status})
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="detect",
+        url_name="detect",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def detect_digits(self, request: Request) -> Response:
+        """Uploads an image to detect sudoku digits."""
+        if "image" not in request.FILES:
+            return Response(
+                {"detail": "No image file provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        image_file = request.FILES["image"]
+
+        if image_file.size > 10 * 1024 * 1024:
+            return Response(
+                {"detail": "Image file too large. Maximum size is 10MB"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        allowed_formats = ["image/jpeg", "image/png", "image/jpg"]
+        if image_file.content_type not in allowed_formats:
+            return Response(
+                {"detail": "Invalid image format. Only JPEG and PNG are supported"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            task = detect_sudoku_digits.delay(image_file.read())
+            update_sudoku_detection(DetectionStatusChoices.PENDING)
+
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Digit detection started",
+                    "task_id": task.id,
+                }
+            )
+        except Exception as e:
+            update_sudoku_detection(DetectionStatusChoices.FAILED)
+            return Response(
+                {"detail": f"Failed to start digit detection: {e!s}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 __all__ = ["SudokuViewSet"]
