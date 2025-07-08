@@ -8,8 +8,8 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from app.sudoku.models import Sudoku
 
 
-class EventParams(TypedDict):
-    """Event parameters."""
+class _SudokuStatusEventParams(TypedDict):
+    """Sudoku status consumer event parameters."""
 
     type: str
     sudoku_id: str
@@ -57,12 +57,42 @@ class SudokuStatusConsumer(AsyncJsonWebsocketConsumer):
                 }
             )
 
-    async def status_update(self, event: EventParams) -> None:
+    async def status_update(self, event: _SudokuStatusEventParams) -> None:
         """Handles sudoku status update events."""
         await self.send_json(
             {
                 "type": "status_update",
                 "sudoku_id": event["sudoku_id"],
+                "status": event["status"],
+            }
+        )
+
+
+class _DetectionStatusEventParams(TypedDict):
+    """Detection status consumer event parameters."""
+
+    type: str
+    status: str
+
+
+class DetectionStatusConsumer(AsyncJsonWebsocketConsumer):
+    """Consumer for sudoku detection status updates."""
+
+    async def connect(self) -> None:
+        """Handles connection."""
+        self.room_group_name = "sudoku_detection_status"
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code: int) -> None:
+        """Handles disconnection."""
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    async def detection_status_update(self, event: _DetectionStatusEventParams) -> None:
+        """Handles sudoku detection status update events."""
+        await self.send_json(
+            {
+                "type": "detection_status_update",
                 "status": event["status"],
             }
         )
