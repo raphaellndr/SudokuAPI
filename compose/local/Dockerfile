@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.12
 #################
 # Builder stage #
 #################
-FROM python:${PYTHON_VERSION}-alpine AS builder
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 # Set up environment
 # First line is to enable running poetry without specifying the path
@@ -18,13 +18,15 @@ ENV PATH="/root/.local/bin:${PATH}" \
 # Set working directory to /src
 WORKDIR /src
 
-# Install system dependencies and pipx
-RUN apk add --update --no-cache \
-        pipx \
-        git \
-        libffi-dev && \
-    apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev
+# Update package lists and install system dependencies
+RUN apt-get update && apt-get install -y \
+    pipx \
+    git \
+    build-essential \
+    libpq-dev \
+    libffi-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install poetry with pipx and inject poetry-plugin-bundle
 RUN pipx install poetry==${POETRY_VERSION}
@@ -38,15 +40,12 @@ COPY tests ./tests/
 COPY compose/local/celery/* compose/local/entrypoint.sh ./
 
 # Bundle dependencies into a virtual environment
-RUN poetry bundle venv /venv --with dev
-
-# Clean up
-RUN rm -rf /var/cache/apk/* && apk del .tmp-build-deps
+RUN poetry bundle venv /venv --with dev -vvv
 
 ####################
 # Web server image #
 ####################
-FROM python:${PYTHON_VERSION}-alpine AS runtime
+FROM python:${PYTHON_VERSION}-slim AS runtime
 
 ENV PATH="/venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -55,11 +54,13 @@ ENV PATH="/venv/bin:${PATH}" \
 # Set working directory to /src
 WORKDIR /src
 
-# Install system dependencies
-RUN apk add --update --no-cache postgresql-libs
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+        libpq5 \
+        && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 # Copy virtual environment from builder
 COPY --from=builder /venv /venv
