@@ -56,8 +56,8 @@ WORKDIR /src
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
-        libpq5 \
-        && rm -rf /var/lib/apt/lists/*
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
