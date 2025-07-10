@@ -14,7 +14,7 @@ SECRET_KEY = env(
     default="!!!SET DJANGO_SECRET_KEY!!!",
 )
 
-ALLOWED_HOSTS: list[str] = ["localhost", "0.0.0.0", "127.0.0.1"]
+ALLOWED_HOSTS: list[str] = ["localhost", "0.0.0.0", "127.0.0.1", "192.168.1.160"]
 
 
 # JWT settings

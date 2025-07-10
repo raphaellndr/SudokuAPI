@@ -78,6 +78,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://192.168.1.160:3000",
+    "https://sudoku-arena-henna.vercel.app"
 ]
 
 
