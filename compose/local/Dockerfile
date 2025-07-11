@@ -57,7 +57,7 @@ WORKDIR /src
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     libpq5 \
-    ffmpeg libsm6 libxext6 \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group

@@ -52,16 +52,10 @@ ENV PATH="/venv/bin:${PATH}" \
 
 # Set working directory to /src
 WORKDIR /src
-    
+
 RUN apt-get update && apt-get install -y \
     libpq5 \
     ffmpeg \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group
