@@ -197,7 +197,7 @@ class GameRecordViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        instance.status = GameStatusChoices.STOP
+        instance.status = GameStatusChoices.ABANDONED
         instance.save()
 
         # Update user stats
@@ -222,7 +222,7 @@ class GameRecordViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        instance.status = GameStatusChoices.ABANDONED
+        instance.status = GameStatusChoices.STOPPED
         instance.save()
 
         # Update user stats
