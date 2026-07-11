@@ -20,6 +20,9 @@ from app.game_record.serializers import (
 )
 from app.user.models import UserStats
 
+# Maximum number of records deletable in a single bulk_delete call.
+MAX_BULK_DELETE = 100
+
 
 class GameRecordViewSet(viewsets.ModelViewSet):
     """ViewSet for managing GameRecord CRUD operations."""
@@ -237,9 +240,9 @@ class GameRecordViewSet(viewsets.ModelViewSet):
         if not ids:
             return Response({"error": "No IDs provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(ids) > 100:  # Limit bulk operations
+        if len(ids) > MAX_BULK_DELETE:
             return Response(
-                {"error": "Cannot delete more than 100 records at once"},
+                {"error": f"Cannot delete more than {MAX_BULK_DELETE} records at once"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

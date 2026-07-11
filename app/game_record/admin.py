@@ -1,9 +1,13 @@
+"""Django admin configuration for GameRecord."""
+
 from django.contrib import admin
 
 from .models import GameRecord
 
 
 class GameRecordAdmin(admin.ModelAdmin):
+    """Admin configuration for `GameRecord`."""
+
     list_display = (
         "id",
         "user",

@@ -103,6 +103,9 @@ line-length = 100
 indent-width = 4
 target-version = "py312"
 extend-exclude = ["*/migrations/*.py"]
+# Honor the exclusions even when files are passed explicitly (e.g. by pre-commit),
+# so auto-generated migrations are never linted.
+force-exclude = true
 
 [tool.ruff.lint]
 select = [
@@ -134,6 +137,15 @@ ignore = [
 
 [tool.ruff.lint.flake8-pytest-style]
 parametrize-names-type = "csv"
+
+[tool.ruff.lint.pylint]
+# pytest tests routinely inject many fixtures; allow a higher argument count.
+max-args = 8
+
+[tool.ruff.lint.per-file-ignores]
+# Tests don't need docstrings (see .claude/rules/testing.md), legitimately use magic
+# values in assertions, and inject fixtures that exceed the Pylint argument limits.
+"tests/**/*.py" = ["D", "PLR", "T20"]
 
 [tool.pytest.ini_options]
 pythonpath = ["app"]

@@ -102,7 +102,8 @@ class GameRecordCreateSerializer(serializers.ModelSerializer[GameRecord]):
         """
         sudoku_id = validated_data.pop("sudoku_id", None)
         if sudoku_id:
-            from app.sudoku.models import Sudoku
+            # Local import to avoid a circular import with the sudoku app.
+            from app.sudoku.models import Sudoku  # noqa: PLC0415
 
             try:
                 validated_data["sudoku"] = Sudoku.objects.get(id=sudoku_id)

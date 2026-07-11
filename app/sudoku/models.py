@@ -65,6 +65,7 @@ class Sudoku(TimestampedMixin):
         ]
 
     def __str__(self) -> str:
+        """Returns a readable representation of the sudoku."""
         return f"Sudoku {self.id} - Status: {self.status}"
 
 
@@ -96,6 +97,7 @@ class SudokuSolution(TimestampedMixin):
         verbose_name_plural = _("sudoku solutions")
 
     def __str__(self) -> str:
+        """Returns a readable representation of the solution."""
         return f"Solution for Sudoku {self.sudoku.id}"
 
 

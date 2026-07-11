@@ -244,7 +244,8 @@ class GameRecord(TimestampedMixin):
         score = base_score - hints_penalty - checks_penalty - deletions_penalty - time_penalty
         return max(score, 0)
 
-    def clean(self):
+    def clean(self) -> None:
+        """Validates that the stored score matches the computed score."""
         super().clean()
 
         expected_score = self.calculate_score()

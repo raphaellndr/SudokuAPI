@@ -6,6 +6,11 @@ import cv2
 import numpy as np
 from cv2.typing import MatLike
 
+# Minimum contour area (px²) considered a candidate for the sudoku grid.
+MIN_CONTOUR_AREA = 50
+# A sudoku grid contour, once approximated, is a quadrilateral (4 corners).
+QUADRILATERAL_CORNERS = 4
+
 
 def preprocess_image(image: MatLike) -> MatLike:
     """Preprocesses the input image.
@@ -32,10 +37,10 @@ def get_biggest_contour(contours: Sequence[MatLike]) -> np.ndarray:
 
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 50:
+        if area > MIN_CONTOUR_AREA:
             perimeter = cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
-            if len(approx) == 4 and area > max_area:
+            if len(approx) == QUADRILATERAL_CORNERS and area > max_area:
                 biggest = approx
                 max_area = area
 

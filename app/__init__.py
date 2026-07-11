@@ -1,0 +1,1 @@
+"""SudokuArena API application package."""

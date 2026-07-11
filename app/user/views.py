@@ -30,6 +30,9 @@ LEADERBOARD_CACHE_TTL = 600
 # Fixed cache key + upper bound for the leaderboard (sliced per-request).
 LEADERBOARD_CACHE_KEY = "leaderboard"
 LEADERBOARD_MAX = 100
+# Calendar bounds for stats query-parameter validation.
+MAX_ISO_WEEK = 53
+MONTHS_IN_YEAR = 12
 
 
 class ManageUserView(generics.RetrieveUpdateAPIView[User]):
@@ -203,7 +206,7 @@ class UserStatsViewSet(viewsets.ViewSet):
                 year_int = int(year)
                 week_int = int(week_str)
 
-                if not (1 <= week_int <= 53):
+                if not (1 <= week_int <= MAX_ISO_WEEK):
                     return Response(
                         {"error": "Week must be between 1 and 53"},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -250,7 +253,7 @@ class UserStatsViewSet(viewsets.ViewSet):
             try:
                 month = int(month_str)
                 year = int(year_str)
-                if not (1 <= month <= 12):
+                if not (1 <= month <= MONTHS_IN_YEAR):
                     return Response(
                         {"error": "Month must be between 1 and 12"},
                         status=status.HTTP_400_BAD_REQUEST,

@@ -235,7 +235,8 @@ class UserStats(TimestampedMixin):
 
     def recalculate_from_games(self) -> None:
         """Recalculates all statistics from the user's game records."""
-        from app.game_record.models import GameRecord
+        # Local import to avoid a circular import between the user and game_record models.
+        from app.game_record.models import GameRecord  # noqa: PLC0415
 
         stats = GameRecord.objects.filter(user=self.user).aggregate_stats()
         for field, value in stats.items():
