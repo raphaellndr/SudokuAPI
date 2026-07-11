@@ -94,7 +94,7 @@ A Django project (`config/`) with feature apps under `app/`. A few things not ob
 - **Schema**: drf-spectacular serves the OpenAPI spec at `/api/schema/` and Swagger UI at `/api/docs/`. Document endpoints with `@extend_schema` / `@extend_schema_view`.
 - **Async work**: solving and image detection are Celery tasks dispatched from viewset actions with `.delay()`; the returned `task_id` is stored on the model. Progress is pushed to the frontend over Channels from `app/sudoku/base.py` (`update_sudoku_status`, `update_sudoku_detection`) — see `.claude/rules/celery-tasks.md`.
 - **Solver & detection**: the proprietary solver is a git dependency imported as `sudoku_resolver`. The image pipeline (OpenCV + a bundled ONNX classifier) lives in `app/sudoku/detection/` and is not fully wired end-to-end yet.
-- **Auth**: SimpleJWT bearer tokens + dj-rest-auth (register/login/logout) + allauth Google OAuth. The user model is a custom email-based `user.User` with a UUID PK. Signals in `app/user/signals.py` auto-create and refresh `UserStats`.
+- **Auth**: SimpleJWT bearer tokens + dj-rest-auth (register/login/logout) + allauth Google OAuth. The user model is a custom email-based `user.User` with a UUID PK. A signal in `app/user/signals.py` auto-creates each user's `UserStats`; those stats are recalculated by the `game_record` viewset on write (via `GameRecord.objects.aggregate_stats()`), not by a signal.
 
 ## Conventions
 
@@ -106,9 +106,8 @@ A Django project (`config/`) with feature apps under `app/`. A few things not ob
 
 ## Key gotchas
 
-Known rough edges (documented, not yet fixed — candidates for a later cleanup pass):
+Known rough edges (documented, not yet fixed):
 
-- `config/settings/production.py` sets `DEBUG = True`.
-- `app/sudoku/tasks.py`'s `__all__` lists a non-existent `detect_sudoku`.
 - The README references `docker-compose.production.yml`; the actual production compose file is `docker-compose.yml`.
 - The proprietary `sudoku-resolver` is a **git** dependency (`pyproject.toml`), not a private package index.
+- `requests` is a direct dependency only because django-allauth's Google provider imports it at runtime without declaring it.

@@ -16,9 +16,9 @@ DRF conventions across the API. Prefer extending an existing sibling over introd
 - Override `get_serializer_class` to switch serializer by `self.action` (e.g. create vs update vs read).
 - Attach the user and trigger side effects in `perform_create` / `perform_update` / `perform_destroy`.
 - Extra operations are `@action(...)`. Share a URL across verbs with `@<action>.mapping.<verb>` (e.g. POST `solver` + `@solve.mapping.delete` for abort). Async operations kick off Celery with `task.delay(...)`, store `task_id`, flip status, and return the id.
-- Pagination is a small inline class per viewset (`LimitOffsetPagination` / `PageNumberPagination` subclass) set as `pagination_class`.
+- Pagination: reuse the shared `StandardResultsSetPagination` from `app/core/pagination.py` for standard page-number lists; only define an inline `pagination_class` when a viewset needs different behaviour (e.g. sudoku's `LimitOffsetPagination`).
 - Permissions are the built-ins (`IsAuthenticated`, `AllowAny`), selected either statically via `permission_classes` or dynamically via `get_permissions(self)` keyed on `self.action`.
-- **Object-level ownership is checked manually** inside each action — there are no custom `BasePermission` classes. Either raise `rest_framework.exceptions.PermissionDenied` (game_record style) or return a 403 `Response` via a module-level helper (sudoku's `_check_sudoku_ownership`). If using the return-a-Response helper, call it first thing in the action.
+- **Object-level ownership is checked manually** inside each action (raising `rest_framework.exceptions.PermissionDenied`) — there are no custom `BasePermission` classes. Query-scoped `get_queryset` is the primary isolation; the explicit check adds defense-in-depth and covers shared/anonymous rows. Call it before acting on the object.
 - Document query params / non-obvious responses with drf-spectacular `@extend_schema` / `@extend_schema_view` + `OpenApiParameter`.
 
 Reference: `app/sudoku/views.py`, `app/game_record/views.py`, `app/user/views.py`.
