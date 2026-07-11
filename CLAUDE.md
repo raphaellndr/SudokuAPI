@@ -60,6 +60,7 @@ Transform tasks into verifiable goals:
 - "Refactor X" → "Ensure tests pass before and after"
 
 For multi-step tasks, state a brief plan:
+
 ```
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
@@ -100,15 +101,14 @@ A Django project (`config/`) with feature apps under `app/`. A few things not ob
 - Docstring format: `.claude/rules/docstrings.md` (Sphinx). Models/choices: `.claude/rules/django-models.md`. Endpoints: `.claude/rules/endpoints.md`. Tasks: `.claude/rules/celery-tasks.md`. Tests: `.claude/rules/testing.md`.
 - Modules declare an explicit `__all__`.
 - Type hints are used pervasively (mypy strict-ish with `django-stubs`/`drf-stubs`). Ruff line length is 100.
-- **Target is Python 3.11 syntax** (`.ruff.toml`/mypy `py311`) even though the runtime is 3.12 — do **not** use PEP 695 (`type` aliases, `class Foo[T]`); use `TypeVar`, `TypedDict`, and PEP 604 unions instead.
+- All tool config (ruff, mypy, pytest, coverage) lives in `pyproject.toml`; the package is PEP 621 `[project]` with `package-mode = false` (it's an application, not a distributable package).
+- Ruff/mypy target `py312`. PEP 695 (`type` aliases, `class Foo[T]`) is now syntactically available, but the codebase doesn't use it yet — match the existing style (`TypeVar`/`TypedDict`, PEP 604 unions) unless deliberately modernizing.
 
 ## Key gotchas
 
 Known rough edges (documented, not yet fixed — candidates for a later cleanup pass):
 
-- `pytest.ini` and `.mypy.ini` reference `app.settings`, which does not exist — the real settings module is `config.settings.*`.
 - `config/settings/production.py` sets `DEBUG = True`.
-- Ruff and mypy target `py311` while the project runs on Python 3.12.
 - `app/sudoku/tasks.py`'s `__all__` lists a non-existent `detect_sudoku`.
 - The README references `docker-compose.production.yml`; the actual production compose file is `docker-compose.yml`.
 - The proprietary `sudoku-resolver` is a **git** dependency (`pyproject.toml`), not a private package index.
