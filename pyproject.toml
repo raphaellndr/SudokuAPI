@@ -31,12 +31,10 @@ dependencies = [
     "opencv-python-headless (==5.0.0.93)",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 production = [
     "django-redis (==5.4.0)",
 ]
-
-[dependency-groups]
 dev = [
     # Linting and formatting
     "ruff (==0.15.21)",
