@@ -1,9 +1,9 @@
 # PostgreSQL environment settings for local development
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
-POSTGRES_DB=sudoku_dev
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=!!! SET POSTGRES_PASSWORD !!!
+POSTGRES_DB=sudokuarena
+POSTGRES_USER=sudokuarena
+POSTGRES_PASSWORD=change-me
 
 # Locale settings
 LANG=en_US.utf8

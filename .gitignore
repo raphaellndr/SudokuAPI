@@ -128,7 +128,10 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+# Ignore the real per-service env files, but keep the committed *.example templates.
 .envs/**
+!.envs/**/
+!.envs/**/*.example
 .venv
 env/
 venv/
