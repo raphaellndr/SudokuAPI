@@ -403,7 +403,7 @@ def test_delete_sudoku_solution(
         sudoku.status = status
         sudoku.save(update_fields=["status"])
 
-    monkeypatch.setattr("sudoku.views.update_sudoku_status", mock_update_sudoku_status)
+    monkeypatch.setattr("app.sudoku.views.update_sudoku_status", mock_update_sudoku_status)
 
     url = solution_url(sudoku.id)
     response = client.delete(url)
@@ -500,7 +500,7 @@ def test_solve_sudoku_is_successful(
             }
         )
 
-    monkeypatch.setattr("sudoku.views.SudokuViewSet.solve", mock_solve_view)
+    monkeypatch.setattr("app.sudoku.views.SudokuViewSet.solve", mock_solve_view)
 
     url = solver_url(sudoku.id)
     response = client.post(url)
@@ -543,7 +543,7 @@ def test_abort_sudoku_solver_is_successful(
             }
         )
 
-    monkeypatch.setattr("sudoku.views.SudokuViewSet.abort", mock_abort_view)
+    monkeypatch.setattr("app.sudoku.views.SudokuViewSet.abort", mock_abort_view)
 
     url = solver_url(sudoku.id)
     response = client.delete(url)

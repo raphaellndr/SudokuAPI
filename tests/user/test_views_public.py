@@ -13,7 +13,7 @@ LOGIN_URL: Final[str] = reverse("authentication:rest_login")
 REGISTER_USER_URL: Final[str] = reverse("authentication:rest_register")
 TOKEN_OBTAIN_PAIR_URL: Final[str] = reverse("authentication:token_obtain_pair")
 TOKEN_VERIFY_URL: Final[str] = reverse("authentication:token_verify")
-USER_DETAILS_URL: Final[str] = reverse("authentication:rest_user_details")
+USER_DETAILS_URL: Final[str] = reverse("users:me")
 
 
 def test_create_user(api_client, register_user_payload) -> None:
@@ -21,7 +21,7 @@ def test_create_user(api_client, register_user_payload) -> None:
     response = api_client().post(REGISTER_USER_URL, register_user_payload)
 
     assert response.status_code == status.HTTP_201_CREATED
-    user = User.objects.get(**response.data["user"])
+    user = User.objects.get(email=register_user_payload["email"])
     assert user.check_password(register_user_payload["password1"])
     assert "password" not in response.data["user"]
 

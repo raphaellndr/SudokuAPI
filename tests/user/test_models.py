@@ -66,7 +66,6 @@ def test_create_two_users_with_same_email(create_users) -> None:
 
 def test_create_superuser(create_superuser) -> None:
     """Tests creating a new superuser."""
-
     superuser = create_superuser()
 
     assert superuser.username

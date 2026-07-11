@@ -46,14 +46,16 @@ class SudokuStatusConsumer(AsyncJsonWebsocketConsumer):
         sudoku_id = content.get("sudoku_id")
 
         if type_ == "get_status" and sudoku_id:
-            sudoku = sync_to_async(Sudoku.objects.get)(id=sudoku_id)
-            status = sudoku.status
+            try:
+                sudoku = await sync_to_async(Sudoku.objects.get)(id=sudoku_id)
+            except Sudoku.DoesNotExist:
+                return
 
             await self.send_json(
                 {
                     "type": "status_update",
                     "sudoku_id": sudoku_id,
-                    "status": status,
+                    "status": sudoku.status,
                 }
             )
 
@@ -98,4 +100,4 @@ class DetectionStatusConsumer(AsyncJsonWebsocketConsumer):
         )
 
 
-__all__ = ["SudokuStatusConsumer"]
+__all__ = ["DetectionStatusConsumer", "SudokuStatusConsumer"]

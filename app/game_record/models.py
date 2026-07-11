@@ -1,6 +1,7 @@
 """Game record model for tracking user game sessions."""
 
 import uuid
+from typing import Any
 
 from django.conf import settings
 from django.core.cache import cache
@@ -12,15 +13,75 @@ from django.core.validators import (
     MinValueValidator,
 )
 from django.db import models
+from django.db.models import Avg, Count, Max, Min, Q, Sum
 from django.utils.translation import gettext_lazy as _
 
+from app.core.constants import SUDOKU_CELLS
 from app.core.models import TimestampedMixin
 from app.game_record.choices import GameStatusChoices
 from app.sudoku.models import Sudoku
 
 
+class GameRecordQuerySet(models.QuerySet["GameRecord"]):
+    """Custom queryset for `GameRecord`."""
+
+    def aggregate_stats(self) -> dict[str, Any]:
+        """Computes aggregated game statistics in a single database query.
+
+        Returns a fully-formed stats dict; an empty queryset yields zeros (and ``None``
+        for averages/bests), so callers need no separate empty-case handling.
+
+        :return: mapping of stat name to value.
+        """
+        agg = self.aggregate(
+            total_games=Count("id"),
+            won_games=Count("id", filter=Q(won=True)),
+            lost_games=Count("id", filter=Q(won=False)),
+            completed_games=Count("id", filter=Q(status=GameStatusChoices.COMPLETED)),
+            abandoned_games=Count("id", filter=Q(status=GameStatusChoices.ABANDONED)),
+            stopped_games=Count("id", filter=Q(status=GameStatusChoices.STOPPED)),
+            in_progress_games=Count("id", filter=Q(status=GameStatusChoices.IN_PROGRESS)),
+            total_time_seconds=Sum("time_taken"),
+            average_time_seconds=Avg("time_taken"),
+            best_time_seconds=Min("time_taken"),
+            total_score=Sum("score"),
+            average_score=Avg("score"),
+            best_score=Max("score"),
+            total_hints_used=Sum("hints_used"),
+            total_checks_used=Sum("checks_used"),
+            total_deletions=Sum("deletions"),
+        )
+
+        total_games = agg["total_games"] or 0
+        win_rate = round(agg["won_games"] / total_games, 2) if total_games else 0.0
+        average_time = agg["average_time_seconds"]
+        average_score = agg["average_score"]
+
+        return {
+            "total_games": total_games,
+            "won_games": agg["won_games"] or 0,
+            "lost_games": agg["lost_games"] or 0,
+            "completed_games": agg["completed_games"] or 0,
+            "abandoned_games": agg["abandoned_games"] or 0,
+            "stopped_games": agg["stopped_games"] or 0,
+            "in_progress_games": agg["in_progress_games"] or 0,
+            "win_rate": win_rate,
+            "total_time_seconds": agg["total_time_seconds"] or 0,
+            "average_time_seconds": round(average_time, 2) if average_time is not None else None,
+            "best_time_seconds": agg["best_time_seconds"],
+            "total_score": agg["total_score"] or 0,
+            "average_score": round(average_score, 2) if average_score is not None else None,
+            "best_score": agg["best_score"],
+            "total_hints_used": agg["total_hints_used"] or 0,
+            "total_checks_used": agg["total_checks_used"] or 0,
+            "total_deletions": agg["total_deletions"] or 0,
+        }
+
+
 class GameRecord(TimestampedMixin):
     """Records a game session."""
+
+    objects = GameRecordQuerySet.as_manager()
 
     id = models.UUIDField(
         _("game record identifier"),
@@ -101,28 +162,28 @@ class GameRecord(TimestampedMixin):
     )
     original_puzzle = models.CharField(
         _("original puzzle"),
-        max_length=81,
+        max_length=SUDOKU_CELLS,
         validators=[
-            MinLengthValidator(81, _("Puzzle must be exactly 81 characters")),
-            MaxLengthValidator(81, _("Puzzle must be exactly 81 characters")),
+            MinLengthValidator(SUDOKU_CELLS, _("Puzzle must be exactly 81 characters")),
+            MaxLengthValidator(SUDOKU_CELLS, _("Puzzle must be exactly 81 characters")),
         ],
         help_text=_("The initial puzzle state"),
     )
     solution = models.CharField(
         _("solution"),
-        max_length=81,
+        max_length=SUDOKU_CELLS,
         validators=[
-            MinLengthValidator(81, _("Puzzle must be exactly 81 characters")),
-            MaxLengthValidator(81, _("Puzzle must be exactly 81 characters")),
+            MinLengthValidator(SUDOKU_CELLS, _("Puzzle must be exactly 81 characters")),
+            MaxLengthValidator(SUDOKU_CELLS, _("Puzzle must be exactly 81 characters")),
         ],
         help_text=_("The solution to the Sudoku puzzle"),
     )
     final_state = models.CharField(
         _("final state"),
-        max_length=81,
+        max_length=SUDOKU_CELLS,
         validators=[
-            MinLengthValidator(81, _("Puzzle must be exactly 81 characters")),
-            MaxLengthValidator(81, _("Puzzle must be exactly 81 characters")),
+            MinLengthValidator(SUDOKU_CELLS, _("Puzzle must be exactly 81 characters")),
+            MaxLengthValidator(SUDOKU_CELLS, _("Puzzle must be exactly 81 characters")),
         ],
         help_text=_("Player's final state"),
     )

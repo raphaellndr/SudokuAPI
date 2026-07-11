@@ -27,14 +27,6 @@ def test_auth_logout_url() -> None:
     assert resolve(url).view_name == "authentication:rest_logout"
 
 
-def test_auth_user_url() -> None:
-    """Tests that user's URL and view name are correct."""
-    url = reverse("authentication:rest_user_details")
-
-    assert url == "/api/auth/user/"
-    assert resolve(url).view_name == "authentication:rest_user_details"
-
-
 def test_auth_token_url() -> None:
     """Tests that token's URL and view name are correct."""
     url = reverse("authentication:token_obtain_pair")

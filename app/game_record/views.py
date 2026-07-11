@@ -1,14 +1,16 @@
 """ViewSet for GameRecord CRUD operations."""
 
+from typing import Any
+
 from django.db.models import QuerySet
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
+from app.core.pagination import StandardResultsSetPagination
 from app.game_record.choices import GameStatusChoices
 from app.game_record.models import GameRecord
 from app.game_record.serializers import (
@@ -19,14 +21,6 @@ from app.game_record.serializers import (
 from app.user.models import UserStats
 
 
-class StandardResultsSetPagination(PageNumberPagination):
-    """Standard pagination class."""
-
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
-
 class GameRecordViewSet(viewsets.ModelViewSet):
     """ViewSet for managing GameRecord CRUD operations."""
 
@@ -34,7 +28,7 @@ class GameRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
-    def get_serializer_class(self) -> BaseSerializer:
+    def get_serializer_class(self) -> type[BaseSerializer]:
         """Returns appropriate serializer class based on action."""
         if self.action == "create":
             return GameRecordCreateSerializer
@@ -44,7 +38,11 @@ class GameRecordViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet[GameRecord]:
         """Filters queryset to only show user's own game records."""
-        queryset = GameRecord.objects.filter(user=self.request.user).order_by("-created_at")
+        queryset = (
+            GameRecord.objects.filter(user=self.request.user)
+            .select_related("user", "sudoku")
+            .order_by("-created_at")
+        )
 
         status_filter = self.request.query_params.get("status")
         won_filter = self.request.query_params.get("won")
@@ -66,53 +64,53 @@ class GameRecordViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def perform_create(self, serializer) -> GameRecord:
+    def perform_create(self, serializer: BaseSerializer[GameRecord]) -> GameRecord:
         """Creates a new game record for the authenticated user."""
         game_record = serializer.save(user=self.request.user)
         self._update_user_stats()
         return game_record
 
-    def perform_update(self, serializer) -> GameRecord:
+    def perform_update(self, serializer: BaseSerializer[GameRecord]) -> GameRecord:
         """Updates game record and refresh user stats."""
         game_record = serializer.save()
         self._update_user_stats()
         return game_record
 
-    def perform_destroy(self, instance) -> None:
+    def perform_destroy(self, instance: GameRecord) -> None:
         """Deletes game record and refresh user stats."""
         instance.delete()
         self._update_user_stats()
 
-    def _update_user_stats(self):
+    def _update_user_stats(self) -> None:
         """Updates user statistics after CRUD operations."""
         user_stats = UserStats.get_or_create_for_user(self.request.user)
         user_stats.recalculate_from_games()
 
-    def _check_ownership(self, obj):
+    def _check_ownership(self, obj: GameRecord) -> None:
         """Checks if the user owns the game record."""
         if obj.user != self.request.user:
             raise PermissionDenied("You can only access your own game records.")
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Retrieves a specific game record."""
         instance = self.get_object()
         self._check_ownership(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Updates a specific game record."""
         instance = self.get_object()
         self._check_ownership(instance)
         return super().update(request, *args, **kwargs)
 
-    def partial_update(self, request, *args, **kwargs):
+    def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Partially updates a specific game record."""
         instance = self.get_object()
         self._check_ownership(instance)
         return super().partial_update(request, *args, **kwargs)
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Deletes a specific game record."""
         instance = self.get_object()
         self._check_ownership(instance)
@@ -155,7 +153,7 @@ class GameRecordViewSet(viewsets.ModelViewSet):
         return Response({"count": len(serializer.data), "results": serializer.data})
 
     @action(detail=True, methods=["post"])
-    def complete(self, request: Request, pk=None) -> Response:
+    def complete(self, request: Request, pk: str | None = None) -> Response:
         """Marks a game as completed."""
         instance = self.get_object()
         self._check_ownership(instance)
@@ -182,7 +180,7 @@ class GameRecordViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["post"])
-    def abandon(self, request: Request, pk=None) -> Response:
+    def abandon(self, request: Request, pk: str | None = None) -> Response:
         """Marks a game as abandoned."""
         instance = self.get_object()
         self._check_ownership(instance)
@@ -207,7 +205,7 @@ class GameRecordViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
-    def stop(self, request: Request, pk=None) -> Response:
+    def stop(self, request: Request, pk: str | None = None) -> Response:
         """Marks a game as stopped."""
         instance = self.get_object()
         self._check_ownership(instance)

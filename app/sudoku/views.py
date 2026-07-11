@@ -1,5 +1,6 @@
 """Views for the sudoku APIs."""
 
+import logging
 from collections.abc import Sequence
 
 from celery import current_app
@@ -9,34 +10,61 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema
 from kombu.exceptions import OperationalError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, ModelSerializer
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from .base import update_sudoku_detection, update_sudoku_status
 from .choices import DetectionStatusChoices, SudokuStatusChoices
+from .constants import MAX_IMAGE_SIZE_BYTES, SUPPORTED_IMAGE_CONTENT_TYPES
 from .models import Sudoku
 from .serializers import AnonymousSudokuSerializer, SudokuSerializer, SudokuSolutionSerializer
 from .tasks import detect_sudoku_digits, solve_sudoku
 
+logger = logging.getLogger(__name__)
 
-def _check_sudoku_ownership(sudoku: Sudoku, request: Request) -> Response:
-    """Checks that the sudoku belongs to the current user.
 
-    If the sudoku has a user and it"s not the current user, deny access.
+class _SolveAnonThrottle(AnonRateThrottle):
+    """Throttles anonymous solve requests (rate keyed by the ``solve`` scope)."""
+
+    scope = "solve"
+
+
+class _SolveUserThrottle(UserRateThrottle):
+    """Throttles authenticated solve requests."""
+
+    scope = "solve"
+
+
+class _DetectAnonThrottle(AnonRateThrottle):
+    """Throttles anonymous detection requests."""
+
+    scope = "detect"
+
+
+class _DetectUserThrottle(UserRateThrottle):
+    """Throttles authenticated detection requests."""
+
+    scope = "detect"
+
+
+def _check_sudoku_ownership(sudoku: Sudoku, request: Request) -> None:
+    """Ensures the sudoku belongs to the current user.
+
+    Anonymous-owned sudokus (``user is None``) are shared, so access is only rejected
+    when the sudoku has an owner different from the requester.
 
     :param sudoku: Sudoku instance to check.
     :param request: Request instance.
-    :return: Response with permission denied message if the user is not the owner.
+    :raises PermissionDenied: if the requester is not the owner.
     """
     if sudoku.user is not None and sudoku.user != request.user:
-        return Response(
-            {"detail": "You don't have permission to solve this sudoku"},
-            status=status.HTTP_403_FORBIDDEN,
-        )
+        raise PermissionDenied("You don't have permission to access this sudoku")
 
 
 class _CustomLimitOffsetPagination(LimitOffsetPagination):
@@ -114,7 +142,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             if difficulties_list:
                 queryset = queryset.filter(difficulty__in=difficulties_list)
 
-        return queryset.order_by("-created_at").distinct()
+        return queryset.select_related("user", "solution").order_by("-created_at").distinct()
 
     def perform_create(self, serializer: BaseSerializer[Sudoku]) -> None:
         """Creates new sudoku, associating with user only if authenticated."""
@@ -123,7 +151,13 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         else:
             serializer.save(user=None)
 
-    @action(detail=True, methods=["post"], url_path="solver", url_name="solver")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="solver",
+        url_name="solver",
+        throttle_classes=[_SolveAnonThrottle, _SolveUserThrottle],
+    )
     def solve(self, request: Request, pk: str | None = None) -> Response:
         """Starts solving a sudoku puzzle."""
         sudoku = self.get_object()
@@ -154,10 +188,11 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                     "task_id": task.id,
                 }
             )
-        except Exception as e:
+        except Exception:
+            logger.exception("Failed to start solving sudoku %s", pk)
             update_sudoku_status(sudoku, SudokuStatusChoices.FAILED)
             return Response(
-                {"detail": f"Failed to start solving: {e!s}"},
+                {"detail": "Failed to start solving"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -263,6 +298,7 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
         url_path="detect",
         url_name="detect",
         parser_classes=[MultiPartParser, FormParser],
+        throttle_classes=[_DetectAnonThrottle, _DetectUserThrottle],
     )
     def detect_digits(self, request: Request) -> Response:
         """Uploads an image to detect sudoku digits."""
@@ -274,14 +310,13 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
 
         image_file = request.FILES["image"]
 
-        if image_file.size > 10 * 1024 * 1024:
+        if image_file.size > MAX_IMAGE_SIZE_BYTES:
             return Response(
                 {"detail": "Image file too large. Maximum size is 10MB"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        allowed_formats = ["image/jpeg", "image/png", "image/jpg"]
-        if image_file.content_type not in allowed_formats:
+        if image_file.content_type not in SUPPORTED_IMAGE_CONTENT_TYPES:
             return Response(
                 {"detail": "Invalid image format. Only JPEG and PNG are supported"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -298,10 +333,11 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                     "task_id": task.id,
                 }
             )
-        except Exception as e:
+        except Exception:
+            logger.exception("Failed to start digit detection")
             update_sudoku_detection(DetectionStatusChoices.FAILED)
             return Response(
-                {"detail": f"Failed to start digit detection: {e!s}"},
+                {"detail": "Failed to start digit detection"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

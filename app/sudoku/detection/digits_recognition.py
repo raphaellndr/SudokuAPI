@@ -1,3 +1,5 @@
+"""Digit recognition using the bundled ONNX classifier."""
+
 from pathlib import Path
 
 import cv2
@@ -9,11 +11,8 @@ from cv2.typing import MatLike
 def detect_digits(digits: list[MatLike]) -> list[int]:
     """Detects digits in the boxes using the trained ONNX model.
 
-    Args:
-        digits (list[MatLike]): list of digit images.
-
-    Returns:
-        list[int]: list of detected digits as integers.
+    :param digits: list of digit images.
+    :return: list of detected digits as integers (0 for empty/uncertain cells).
     """
     model_path = Path(__file__).parent / "digits_classifier_model.onnx"
     ort_session = ort.InferenceSession(model_path)

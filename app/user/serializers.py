@@ -132,7 +132,6 @@ class LeaderboardSerializer(serializers.Serializer):
 
     user_id = serializers.UUIDField()
     username = serializers.CharField()
-    email = serializers.EmailField()
     total_games = serializers.IntegerField()
     won_games = serializers.IntegerField()
     completed_games = serializers.IntegerField()

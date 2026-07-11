@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 
 LOGOUT_URL: Final[str] = reverse("authentication:rest_logout")
-USER_DETAILS_URL: Final[str] = reverse("authentication:rest_user_details")
+USER_DETAILS_URL: Final[str] = reverse("users:me")
 
 
 @pytest.fixture
@@ -22,10 +22,8 @@ def test_retrieve_profile(authenticated_client, user_payload) -> None:
     response = authenticated_client.get(USER_DETAILS_URL)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.data == {
-        "username": user_payload["username"],
-        "email": user_payload["email"],
-    }
+    assert response.data["username"] == user_payload["username"]
+    assert response.data["email"] == user_payload["email"]
 
 
 def test_cannot_post_on_detail_url(authenticated_client) -> None:

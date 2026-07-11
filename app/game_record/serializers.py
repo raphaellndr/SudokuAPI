@@ -1,7 +1,6 @@
-"""Game record model for tracking user game sessions."""
+"""Serializers for game records."""
 
-from datetime import timezone
-
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import GameRecord
@@ -153,7 +152,3 @@ class GameRecordUpdateSerializer(serializers.ModelSerializer[GameRecord]):
             )
 
         return data
-
-    def update(self, instance, validated_data):
-        """Updates game record."""
-        return super().update(instance, validated_data)
