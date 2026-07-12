@@ -6,6 +6,7 @@ from uuid import UUID
 from django.urls import reverse
 
 SUDOKUS_URL: Final[str] = reverse("sudokus:sudoku-list")
+DETECT_URL: Final[str] = reverse("sudokus:sudoku-detect")
 
 
 def sudoku_url(sudoku_id: UUID, /) -> str:
@@ -44,4 +45,4 @@ def status_url(sudoku_id: UUID, /) -> str:
     return reverse("sudokus:sudoku-status", kwargs={"pk": sudoku_id})
 
 
-__all__ = ["SUDOKUS_URL", "solution_url", "status_url", "sudoku_url"]
+__all__ = ["DETECT_URL", "SUDOKUS_URL", "solution_url", "status_url", "sudoku_url"]

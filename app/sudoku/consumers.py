@@ -75,6 +75,8 @@ class _DetectionStatusEventParams(TypedDict):
 
     type: str
     status: str
+    grid: str | None
+    message: str | None
 
 
 class DetectionStatusConsumer(AsyncJsonWebsocketConsumer):
@@ -82,7 +84,8 @@ class DetectionStatusConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self) -> None:
         """Handles connection."""
-        self.room_group_name = "sudoku_detection_status"
+        session_id = self.scope["url_route"]["kwargs"]["session_id"]
+        self.room_group_name = f"sudoku_detection_{session_id}"
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
@@ -96,6 +99,8 @@ class DetectionStatusConsumer(AsyncJsonWebsocketConsumer):
             {
                 "type": "detection_status_update",
                 "status": event["status"],
+                "grid": event["grid"],
+                "message": event["message"],
             }
         )
 

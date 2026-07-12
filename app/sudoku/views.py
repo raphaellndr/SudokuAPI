@@ -1,6 +1,7 @@
 """Views for the sudoku APIs."""
 
 import logging
+import uuid
 from collections.abc import Sequence
 
 from celery import current_app
@@ -324,9 +325,18 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        session_id = request.data.get("session_id", "")
         try:
-            update_sudoku_detection(DetectionStatusChoices.PENDING)
-            task = detect_sudoku_digits.delay(image_file.read())
+            uuid.UUID(session_id)
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "Invalid or missing session_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            update_sudoku_detection(session_id, DetectionStatusChoices.PENDING)
+            task = detect_sudoku_digits.delay(image_file.read(), session_id)
 
             return Response(
                 {
@@ -337,7 +347,9 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
         except Exception:
             logger.exception("Failed to start digit detection")
-            update_sudoku_detection(DetectionStatusChoices.FAILED)
+            update_sudoku_detection(
+                session_id, DetectionStatusChoices.FAILED, message="Failed to start digit detection"
+            )
             return Response(
                 {"detail": "Failed to start digit detection"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

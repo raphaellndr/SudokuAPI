@@ -99,26 +99,31 @@ def cleanup_anonymous_sudokus(hours: int = 24) -> str:
 
 
 @app.task
-def detect_sudoku_digits(image_data: bytes) -> dict[str, Any]:
+def detect_sudoku_digits(image_data: bytes, session_id: str) -> dict[str, Any]:
     """Detects digits from a sudoku image using the OpenCV pipeline.
 
     :param image_data: the raw image file data.
+    :param session_id: detection session the status updates are broadcast to.
     :return: a dictionary with the detected grid and processing status.
     """
     try:
-        update_sudoku_detection(DetectionStatusChoices.RUNNING)
+        update_sudoku_detection(session_id, DetectionStatusChoices.RUNNING)
 
         # Convert bytes to OpenCV image
         image_array = np.frombuffer(image_data, np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
         if image is None:
-            update_sudoku_detection(DetectionStatusChoices.FAILED)
+            update_sudoku_detection(
+                session_id, DetectionStatusChoices.FAILED, message="Failed to decode image"
+            )
             return {"status": "error", "message": "Failed to decode image"}
 
         # Guard against decompression bombs: a small compressed file can decode to a huge bitmap.
         if image.shape[0] * image.shape[1] > MAX_IMAGE_PIXELS:
-            update_sudoku_detection(DetectionStatusChoices.FAILED)
+            update_sudoku_detection(
+                session_id, DetectionStatusChoices.FAILED, message="Image resolution too large"
+            )
             return {"status": "error", "message": "Image resolution too large"}
 
         # Resize image to standard dimensions
@@ -134,7 +139,11 @@ def detect_sudoku_digits(image_data: bytes) -> dict[str, Any]:
         biggest_contour = get_biggest_contour(contours)
 
         if biggest_contour.size == 0:
-            update_sudoku_detection(DetectionStatusChoices.FAILED)
+            update_sudoku_detection(
+                session_id,
+                DetectionStatusChoices.FAILED,
+                message="No suitable sudoku grid contour found in the image",
+            )
             return {
                 "status": "error",
                 "message": "No suitable sudoku grid contour found in the image",
@@ -165,17 +174,20 @@ def detect_sudoku_digits(image_data: bytes) -> dict[str, Any]:
         # Detect digits in each box
         digits = detect_digits(boxes)
 
-        update_sudoku_detection(DetectionStatusChoices.COMPLETED)
+        grid = "".join(str(d) for d in digits)
+        update_sudoku_detection(session_id, DetectionStatusChoices.COMPLETED, grid=grid)
 
         return {
             "status": "success",
             "message": "Digit detection completed successfully",
-            "grid": "".join(str(d) for d in digits),
+            "grid": grid,
         }
 
     except Exception:
         logger.exception("Digit detection failed")
-        update_sudoku_detection(DetectionStatusChoices.FAILED)
+        update_sudoku_detection(
+            session_id, DetectionStatusChoices.FAILED, message="Digit detection failed"
+        )
         return {"status": "error", "message": "Digit detection failed"}
 
 
