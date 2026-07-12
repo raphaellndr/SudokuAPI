@@ -111,8 +111,8 @@ class SudokuSerializer(AnonymousSudokuSerializer):
         instance.save()
 
         if solution_data:
-            if hasattr(instance, "solution"):
-                solution = instance.solution
+            solution = getattr(instance, "solution", None)
+            if solution is not None:
                 solution.grid = solution_data.get("grid", solution.grid)
                 solution.save()
             else:

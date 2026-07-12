@@ -75,12 +75,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # CORS settings
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://192.168.1.160:3000",
-    "https://sudoku-arena-henna.vercel.app"
-]
+# Allowed origins are provided per-environment via DJANGO_CORS_ALLOWED_ORIGINS
+# (comma-separated). Defaults cover local frontend development.
+CORS_ALLOWED_ORIGINS = env.list(
+    "DJANGO_CORS_ALLOWED_ORIGINS",
+    default=["http://localhost:3000", "http://127.0.0.1:3000"],
+)
 
 
 # Database
@@ -180,6 +180,17 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "user": "240/min",
+        # Scoped throttles for the CPU/queue-heavy Celery-dispatching endpoints.
+        "solve": "10/min",
+        "detect": "10/min",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -198,10 +209,10 @@ SITE_ID = 1
 # Allauth settings
 
 ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_EMAIL_REQUIRED = True
+# "username" is listed without a trailing "*" so it stays optional (email is the login field).
+ACCOUNT_SIGNUP_FIELDS = ["username", "email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False
 
 
 # Dj-rest-auth settings
@@ -259,7 +270,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [CELERY_BROKER_URL],
+            "hosts": [{"address": CELERY_BROKER_URL, "socket_timeout": None}],
         },
     },
 }

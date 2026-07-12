@@ -206,7 +206,7 @@ docker compose -f docker-compose.local.yml exec web pytest
 
 ## 📤 Production
 
-For production, use the dependencies listed under the `[tool.poetry.group.production]` section, and configure:
+For production, use the dependencies listed under the `production` group in `[dependency-groups]`, and configure:
 
 - **Gunicorn** for WSGI
 - **Django Redis** for caching

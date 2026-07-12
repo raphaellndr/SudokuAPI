@@ -1,0 +1,11 @@
+# PostgreSQL environment settings for production
+POSTGRES_HOST=your-db-host
+POSTGRES_PORT=5432
+POSTGRES_DB=sudokuarena
+POSTGRES_USER=sudokuarena
+POSTGRES_PASSWORD=change-me
+
+# Locale settings
+LANG=en_US.utf8
+LC_COLLATE=en_US.utf8
+LC_CTYPE=en_US.utf8

@@ -13,7 +13,7 @@ FROM python:${PYTHON_VERSION}-slim AS builder
 ENV PATH="/root/.local/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=2.1.1
+    POETRY_VERSION=2.4.1
 
 # Set working directory to /src
 WORKDIR /src

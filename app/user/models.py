@@ -6,7 +6,6 @@ from typing import Any
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Avg, Count, Max, Min, Q, Sum
 from django.utils.translation import gettext_lazy as _
 
 from app.core.models import TimestampedMixin
@@ -153,7 +152,7 @@ class UserStats(TimestampedMixin):
         _("lost games"),
         default=0,
         validators=[MinValueValidator(0)],
-        help_text=_("Total number of games played by the user."),
+        help_text=_("Total number of games lost by the user."),
     )
 
     # Performance metrics
@@ -161,7 +160,7 @@ class UserStats(TimestampedMixin):
         _("win rate"),
         default=0.0,
         validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-        help_text=["Player's win rate."],
+        help_text=_("Player's win rate."),
     )
     total_time_seconds = models.IntegerField(
         _("total time (seconds)"),
@@ -229,89 +228,24 @@ class UserStats(TimestampedMixin):
 
         verbose_name = _("user stats")
         verbose_name_plural = _("user stats")
+        indexes = [
+            # Backs the leaderboard ordering (see UserStatsViewSet.leaderboard).
+            models.Index(fields=["-total_score", "-best_score"]),
+        ]
 
-    def recalculate_from_games(self):
-        """Recalculates all statistics from game records."""
-        from app.game_record.choices import GameStatusChoices
-        from app.game_record.models import GameRecord
+    def recalculate_from_games(self) -> None:
+        """Recalculates all statistics from the user's game records."""
+        # Local import to avoid a circular import between the user and game_record models.
+        from app.game_record.models import GameRecord  # noqa: PLC0415
 
-        queryset = GameRecord.objects.filter(user=self.user)
+        stats = GameRecord.objects.filter(user=self.user).aggregate_stats()
+        for field, value in stats.items():
+            setattr(self, field, value)
 
-        if not queryset.exists():
-            # Reset to defaults
-            self.total_games = 0
-            self.completed_games = 0
-            self.abandoned_games = 0
-            self.stopped_games = 0
-            self.in_progress_games = 0
-            self.won_games = 0
-            self.lost_games = 0
-            self.win_rate = 0.0
-            self.total_time_seconds = 0
-            self.average_time_seconds = None
-            self.best_time_seconds = None
-            self.total_score = 0
-            self.average_score = None
-            self.best_score = None
-            self.total_hints_used = 0
-            self.total_checks_used = 0
-            self.total_deletions = 0
-            self.save()
-            return
-
-        # Calculate aggregated statistics
-        stats = queryset.aggregate(
-            total_games=Count("id"),
-            won_games=Count("id", filter=Q(won=True)),
-            lost_games=Count("id", filter=Q(won=False)),
-            completed_games=Count("id", filter=Q(status=GameStatusChoices.COMPLETED)),
-            abandoned_games=Count("id", filter=Q(status=GameStatusChoices.ABANDONED)),
-            stopped_games=Count("id", filter=Q(status=GameStatusChoices.STOPPED)),
-            in_progress_games=Count("id", filter=Q(status=GameStatusChoices.IN_PROGRESS)),
-            total_time_seconds=Sum("time_taken"),
-            average_time_seconds=Avg("time_taken"),
-            best_time_seconds=Min("time_taken"),
-            total_score=Sum("score"),
-            average_score=Avg("score"),
-            best_score=Max("score"),
-            total_hints_used=Sum("hints_used"),
-            total_checks_used=Sum("checks_used"),
-            total_deletions=Sum("deletions"),
-        )
-
-        # Update fields
-        self.total_games = stats["total_games"]
-        self.won_games = stats["won_games"]
-        self.lost_games = stats["lost_games"]
-        self.completed_games = stats["completed_games"]
-        self.abandoned_games = stats["abandoned_games"]
-        self.stopped_games = stats["stopped_games"]
-        self.in_progress_games = stats["in_progress_games"]
-
-        # Calculate win rate
-        self.win_rate = round(self.won_games / self.total_games, 3) if self.total_games > 0 else 0.0
-
-        # Handle time fields
-        self.total_time_seconds = stats["total_time_seconds"] or 0
-        self.average_time_seconds = (
-            round(stats["average_time_seconds"], 2) if stats["average_time_seconds"] else None
-        )
-        self.best_time_seconds = stats["best_time_seconds"] or None
-
-        # Handle score fields
-        self.total_score = stats["total_score"] or 0
-        self.average_score = round(stats["average_score"], 2) if stats["average_score"] else None
-        self.best_score = stats["best_score"] or 0
-
-        # Handle interaction metrics
-        self.total_hints_used = stats["total_hints_used"] or 0
-        self.total_checks_used = stats["total_checks_used"] or 0
-        self.total_deletions = stats["total_deletions"] or 0
-
-        self.save()
+        self.save(update_fields=[*stats, "updated_at"])
 
     @classmethod
-    def get_or_create_for_user(cls, user):
+    def get_or_create_for_user(cls, user: User) -> "UserStats":
         """Gets or creates UserStats for a user."""
         stats, created = cls.objects.get_or_create(user=user)
         if created:
@@ -319,4 +253,4 @@ class UserStats(TimestampedMixin):
         return stats
 
 
-__all__ = ["GameRecord", "User", "UserStats"]
+__all__ = ["User", "UserStats"]

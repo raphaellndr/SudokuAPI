@@ -1,21 +1,24 @@
+"""Image-processing helpers for sudoku grid detection."""
+
 from collections.abc import Sequence
 
 import cv2
 import numpy as np
 from cv2.typing import MatLike
 
+# Minimum contour area (px²) considered a candidate for the sudoku grid.
+MIN_CONTOUR_AREA = 50
+# A sudoku grid contour, once approximated, is a quadrilateral (4 corners).
+QUADRILATERAL_CORNERS = 4
+
 
 def preprocess_image(image: MatLike) -> MatLike:
     """Preprocesses the input image.
 
-    This function converts the image to grayscale, applies Gaussian blur, and then applies adaptive
-    thresholding.
+    Converts the image to grayscale, applies Gaussian blur, then adaptive thresholding.
 
-    Args:
-        image (MatLike): input image.
-
-    Returns:
-        MatLike: preprocessed image.
+    :param image: input image.
+    :return: preprocessed image.
     """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 1)
@@ -26,21 +29,18 @@ def preprocess_image(image: MatLike) -> MatLike:
 def get_biggest_contour(contours: Sequence[MatLike]) -> np.ndarray:
     """Finds the biggest contour in the image.
 
-    Args:
-        contours (Sequence[MatLike]): input contours.
-
-    Returns:
-        np.ndarray: the biggest contour found in the image.
+    :param contours: input contours.
+    :return: the biggest contour found in the image.
     """
     biggest = np.array([])
     max_area = 0
 
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 50:
+        if area > MIN_CONTOUR_AREA:
             perimeter = cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
-            if len(approx) == 4 and area > max_area:
+            if len(approx) == QUADRILATERAL_CORNERS and area > max_area:
                 biggest = approx
                 max_area = area
 
@@ -50,11 +50,8 @@ def get_biggest_contour(contours: Sequence[MatLike]) -> np.ndarray:
 def reorder(points: np.ndarray) -> np.ndarray:
     """Reorders the points in a contour to a specific order.
 
-    Args:
-        points (np.ndarray): input points.
-
-    Returns:
-        np.ndarray: reordered points.
+    :param points: input points.
+    :return: reordered points.
     """
     points = points.reshape((4, 2))
     new_points = np.zeros((4, 1, 2), dtype=np.int32)
@@ -73,11 +70,8 @@ def reorder(points: np.ndarray) -> np.ndarray:
 def split_into_boxes(image: MatLike) -> list[MatLike]:
     """Splits the image into 81 boxes.
 
-    Args:
-        image (MatLike): input image.
-
-    Returns:
-        list[MatLike]: list of 81 boxes.
+    :param image: input image.
+    :return: list of 81 boxes.
     """
     rows = np.vsplit(image, 9)
     boxes = []

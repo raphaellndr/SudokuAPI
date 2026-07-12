@@ -1,7 +1,6 @@
-"""Game record model for tracking user game sessions."""
+"""Serializers for game records."""
 
-from datetime import timezone
-
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import GameRecord
@@ -103,7 +102,8 @@ class GameRecordCreateSerializer(serializers.ModelSerializer[GameRecord]):
         """
         sudoku_id = validated_data.pop("sudoku_id", None)
         if sudoku_id:
-            from app.sudoku.models import Sudoku
+            # Local import to avoid a circular import with the sudoku app.
+            from app.sudoku.models import Sudoku  # noqa: PLC0415
 
             try:
                 validated_data["sudoku"] = Sudoku.objects.get(id=sudoku_id)
@@ -153,7 +153,3 @@ class GameRecordUpdateSerializer(serializers.ModelSerializer[GameRecord]):
             )
 
         return data
-
-    def update(self, instance, validated_data):
-        """Updates game record."""
-        return super().update(instance, validated_data)

@@ -1,3 +1,5 @@
+"""Digit recognition using the bundled ONNX classifier."""
+
 from pathlib import Path
 
 import cv2
@@ -5,15 +7,17 @@ import numpy as np
 import onnxruntime as ort
 from cv2.typing import MatLike
 
+# Number of array dimensions for a multi-channel (color) image: (height, width, channels).
+COLOR_IMAGE_NDIM = 3
+# Minimum softmax probability required to accept a predicted digit.
+MIN_DIGIT_CONFIDENCE = 0.8
+
 
 def detect_digits(digits: list[MatLike]) -> list[int]:
     """Detects digits in the boxes using the trained ONNX model.
 
-    Args:
-        digits (list[MatLike]): list of digit images.
-
-    Returns:
-        list[int]: list of detected digits as integers.
+    :param digits: list of digit images.
+    :return: list of detected digits as integers (0 for empty/uncertain cells).
     """
     model_path = Path(__file__).parent / "digits_classifier_model.onnx"
     ort_session = ort.InferenceSession(model_path)
@@ -24,7 +28,7 @@ def detect_digits(digits: list[MatLike]) -> list[int]:
         img = cv2.resize(img, (28, 28))
 
         # Convert to grayscale if the image has multiple channels
-        if len(img.shape) == 3:
+        if len(img.shape) == COLOR_IMAGE_NDIM:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Normalize
@@ -41,7 +45,7 @@ def detect_digits(digits: list[MatLike]) -> list[int]:
         class_index = np.argmax(prediction, axis=-1)
         probability_value = np.amax(prediction, axis=-1)
 
-        if probability_value > 0.8:
+        if probability_value > MIN_DIGIT_CONFIDENCE:
             predicted_digits.append(int(class_index[0]))
         else:
             predicted_digits.append(0)

@@ -1,18 +1,22 @@
 """Test the Sudoku views for both authenticated and anonymous users."""
 
+import uuid
 from contextlib import nullcontext as does_not_raise
 
 import pytest
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from app.sudoku.choices import SudokuDifficultyChoices, SudokuStatusChoices
+from app.sudoku.choices import DetectionStatusChoices, SudokuDifficultyChoices, SudokuStatusChoices
+from app.sudoku.constants import MAX_IMAGE_SIZE_BYTES
 from app.sudoku.models import Sudoku, SudokuSolution
 from app.sudoku.serializers import SudokuSerializer
 from app.sudoku.views import SudokuViewSet
 
-from .urls import SUDOKUS_URL, solution_url, solver_url, status_url, sudoku_url
+from .urls import DETECT_URL, SUDOKUS_URL, solution_url, solver_url, status_url, sudoku_url
 
 
 @pytest.mark.parametrize(
@@ -403,7 +407,7 @@ def test_delete_sudoku_solution(
         sudoku.status = status
         sudoku.save(update_fields=["status"])
 
-    monkeypatch.setattr("sudoku.views.update_sudoku_status", mock_update_sudoku_status)
+    monkeypatch.setattr("app.sudoku.views.update_sudoku_status", mock_update_sudoku_status)
 
     url = solution_url(sudoku.id)
     response = client.delete(url)
@@ -500,7 +504,7 @@ def test_solve_sudoku_is_successful(
             }
         )
 
-    monkeypatch.setattr("sudoku.views.SudokuViewSet.solve", mock_solve_view)
+    monkeypatch.setattr("app.sudoku.views.SudokuViewSet.solve", mock_solve_view)
 
     url = solver_url(sudoku.id)
     response = client.post(url)
@@ -543,7 +547,7 @@ def test_abort_sudoku_solver_is_successful(
             }
         )
 
-    monkeypatch.setattr("sudoku.views.SudokuViewSet.abort", mock_abort_view)
+    monkeypatch.setattr("app.sudoku.views.SudokuViewSet.abort", mock_abort_view)
 
     url = solver_url(sudoku.id)
     response = client.delete(url)
@@ -573,3 +577,91 @@ def test_get_sudoku_status(request, api_client, create_sudoku, user: str | None)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["sudoku_status"] == SudokuStatusChoices.RUNNING
+
+
+@pytest.mark.parametrize(
+    "user",
+    [
+        "create_user",
+        None,
+    ],
+)
+def test_detect_digits_starts_detection(request, monkeypatch, api_client, user: str | None) -> None:
+    """Tests that uploading a valid image with a session id dispatches the detection task."""
+    if user is not None:
+        user = request.getfixturevalue(user)()
+    client = api_client(user)
+    # The scoped `detect` throttle (10/min) is keyed in the shared cache and would
+    # otherwise trip across parametrized runs.
+    cache.clear()
+
+    delay_calls = []
+    task_id = "12345"
+
+    def mock_delay(image_data: bytes, session_id: str):
+        delay_calls.append((image_data, session_id))
+        return type("Task", (), {"id": task_id})()
+
+    monkeypatch.setattr("app.sudoku.views.detect_sudoku_digits.delay", mock_delay)
+
+    broadcast_calls = []
+    monkeypatch.setattr(
+        "app.sudoku.views.update_sudoku_detection",
+        lambda *args, **kwargs: broadcast_calls.append((args, kwargs)),
+    )
+
+    session_id = str(uuid.uuid4())
+    image = SimpleUploadedFile("sudoku.png", b"fake-image-bytes", content_type="image/png")
+    response = client.post(DETECT_URL, {"image": image, "session_id": session_id})
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "status": "success",
+        "message": "Digit detection started",
+        "task_id": task_id,
+    }
+    assert delay_calls == [(b"fake-image-bytes", session_id)]
+    assert broadcast_calls == [((session_id, DetectionStatusChoices.PENDING), {})]
+
+
+@pytest.mark.parametrize(
+    ("payload", "expected_detail"),
+    [
+        ("missing_image", "No image file provided"),
+        ("oversize_image", "Image file too large. Maximum size is 10MB"),
+        ("wrong_content_type", "Invalid image format. Only JPEG and PNG are supported"),
+        ("missing_session_id", "Invalid or missing session_id"),
+        ("invalid_session_id", "Invalid or missing session_id"),
+    ],
+)
+def test_detect_digits_invalid_request(
+    monkeypatch, api_client, payload: str, expected_detail: str
+) -> None:
+    """Tests that invalid detection uploads are rejected before dispatching the task."""
+    client = api_client(None)
+    cache.clear()
+    monkeypatch.setattr(
+        "app.sudoku.views.detect_sudoku_digits.delay",
+        lambda *args, **kwargs: pytest.fail("task must not be dispatched"),
+    )
+
+    image = SimpleUploadedFile("sudoku.png", b"fake-image-bytes", content_type="image/png")
+    session_id = str(uuid.uuid4())
+    data: dict = {"image": image, "session_id": session_id}
+    if payload == "missing_image":
+        del data["image"]
+    elif payload == "oversize_image":
+        data["image"] = SimpleUploadedFile(
+            "sudoku.png", b"0" * (MAX_IMAGE_SIZE_BYTES + 1), content_type="image/png"
+        )
+    elif payload == "wrong_content_type":
+        data["image"] = SimpleUploadedFile("sudoku.gif", b"fake", content_type="image/gif")
+    elif payload == "missing_session_id":
+        del data["session_id"]
+    elif payload == "invalid_session_id":
+        data["session_id"] = "not-a-uuid"
+
+    response = client.post(DETECT_URL, data)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data["detail"] == expected_detail

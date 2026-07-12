@@ -7,14 +7,13 @@ from .base import env
 
 # General settings
 
-DEBUG = True
+DEBUG = False
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
-# TODO: change allowed_hosts to the production domain (set env variable)
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default="")
+# The production host(s) must be provided via the DJANGO_ALLOWED_HOSTS env variable
+# (comma-separated). See https://docs.djangoproject.com/en/stable/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 CACHES = {
     "default": {

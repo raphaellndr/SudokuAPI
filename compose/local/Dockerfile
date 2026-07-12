@@ -13,7 +13,7 @@ FROM python:${PYTHON_VERSION}-slim AS builder
 ENV PATH="/root/.local/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=2.1.1
+    POETRY_VERSION=2.4.1
 
 # Set working directory to /src
 WORKDIR /src
@@ -33,7 +33,7 @@ RUN pipx install poetry==${POETRY_VERSION}
 RUN pipx inject poetry poetry-plugin-bundle
 
 # Copy every necessary file to the image
-COPY pyproject.toml poetry.lock pytest.ini manage.py README.md ./
+COPY pyproject.toml poetry.lock manage.py README.md ./
 COPY app ./app/
 COPY config ./config/
 COPY tests ./tests/

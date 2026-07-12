@@ -7,6 +7,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from app.core.constants import SUDOKU_CELLS
 from app.core.models import TimestampedMixin
 
 from .choices import SudokuDifficultyChoices, SudokuStatusChoices
@@ -40,8 +41,8 @@ class Sudoku(TimestampedMixin):
     )
     grid = models.CharField(
         _("grid"),
-        max_length=81,
-        validators=[MinLengthValidator(limit_value=81)],
+        max_length=SUDOKU_CELLS,
+        validators=[MinLengthValidator(limit_value=SUDOKU_CELLS)],
     )
     status = models.CharField(
         _("status"),
@@ -56,8 +57,15 @@ class Sudoku(TimestampedMixin):
 
         verbose_name = "sudoku"
         verbose_name_plural = "sudokus"
+        indexes = [
+            # Backs the per-user list ordered by recency (see SudokuViewSet.get_queryset).
+            models.Index(fields=["user", "-created_at"]),
+            # Backs the anonymous-cleanup scan (see cleanup_anonymous_sudokus).
+            models.Index(fields=["created_at"]),
+        ]
 
     def __str__(self) -> str:
+        """Returns a readable representation of the sudoku."""
         return f"Sudoku {self.id} - Status: {self.status}"
 
 
@@ -78,11 +86,18 @@ class SudokuSolution(TimestampedMixin):
     )
     grid = models.CharField(
         _("solution grid"),
-        max_length=81,
-        validators=[MinLengthValidator(limit_value=81)],
+        max_length=SUDOKU_CELLS,
+        validators=[MinLengthValidator(limit_value=SUDOKU_CELLS)],
     )
 
+    class Meta:
+        """Meta class for the sudoku solution model."""
+
+        verbose_name = _("sudoku solution")
+        verbose_name_plural = _("sudoku solutions")
+
     def __str__(self) -> str:
+        """Returns a readable representation of the solution."""
         return f"Solution for Sudoku {self.sudoku.id}"
 
 

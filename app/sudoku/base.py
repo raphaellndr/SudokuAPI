@@ -30,17 +30,28 @@ def update_sudoku_status(sudoku: Sudoku, status: SudokuStatusChoices) -> None:
     )
 
 
-def update_sudoku_detection(status: DetectionStatusChoices) -> None:
+def update_sudoku_detection(
+    session_id: str,
+    status: DetectionStatusChoices,
+    *,
+    grid: str | None = None,
+    message: str | None = None,
+) -> None:
     """Sends sudoku detection status update via WebSocket.
 
+    :param session_id: detection session the update belongs to.
     :param status: current status for the Sudoku detection.
+    :param grid: detected 81-char grid, only on completion.
+    :param message: human-readable failure reason, only on failure.
     """
     channel_layer = get_channel_layer()
-    room_group_name = "sudoku_detection_status"
+    room_group_name = f"sudoku_detection_{session_id}"
     async_to_sync(channel_layer.group_send)(
         room_group_name,
         {
             "type": "detection_status_update",
             "status": status,
+            "grid": grid,
+            "message": message,
         },
     )
