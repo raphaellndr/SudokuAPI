@@ -174,9 +174,11 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
         try:
-            task = solve_sudoku.delay(pk)
-
+            # Set PENDING before dispatching: a fast task could otherwise write its
+            # terminal status first and have it stomped back to PENDING here.
             update_sudoku_status(sudoku, SudokuStatusChoices.PENDING)
+
+            task = solve_sudoku.delay(pk)
             sudoku.task_id = task.id
             sudoku.save(update_fields=["task_id"])
 
@@ -323,8 +325,8 @@ class SudokuViewSet(viewsets.ModelViewSet[Sudoku]):
             )
 
         try:
-            task = detect_sudoku_digits.delay(image_file.read())
             update_sudoku_detection(DetectionStatusChoices.PENDING)
+            task = detect_sudoku_digits.delay(image_file.read())
 
             return Response(
                 {

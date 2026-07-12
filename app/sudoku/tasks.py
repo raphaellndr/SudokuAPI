@@ -7,6 +7,7 @@ from typing import Any
 
 import cv2
 import numpy as np
+from celery.exceptions import SoftTimeLimitExceeded
 from django.utils import timezone
 from sudoku_resolver.exceptions import ConsistencyError
 from sudoku_resolver.sudoku import Sudoku as SudokuResolver
@@ -15,7 +16,7 @@ from config.celery import app
 
 from .base import update_sudoku_detection, update_sudoku_status
 from .choices import DetectionStatusChoices, SudokuStatusChoices
-from .constants import MAX_IMAGE_PIXELS
+from .constants import MAX_IMAGE_PIXELS, SOLVE_SOFT_TIME_LIMIT_SECONDS, SOLVE_TIME_LIMIT_SECONDS
 from .detection.digits_recognition import detect_digits
 from .detection.utils import get_biggest_contour, preprocess_image, reorder, split_into_boxes
 from .models import Sudoku, SudokuSolution
@@ -38,7 +39,7 @@ def _check_consistency(sudoku_solver: SudokuResolver, /) -> bool:
         return False
 
 
-@app.task
+@app.task(soft_time_limit=SOLVE_SOFT_TIME_LIMIT_SECONDS, time_limit=SOLVE_TIME_LIMIT_SECONDS)
 def solve_sudoku(sudoku_id: str) -> dict[str, Any]:
     """Celery task to solve a Sudoku.
 
@@ -72,6 +73,10 @@ def solve_sudoku(sudoku_id: str) -> dict[str, Any]:
 
         return {"status": "completed", "solution": str(solution.id)}
 
+    except SoftTimeLimitExceeded:
+        logger.warning("Solving sudoku %s exceeded the time limit", sudoku_id)
+        update_sudoku_status(sudoku, SudokuStatusChoices.FAILED)
+        return {"status": "failed", "error": "Solving timed out"}
     except Exception:
         logger.exception("Failed to solve sudoku %s", sudoku_id)
         update_sudoku_status(sudoku, SudokuStatusChoices.FAILED)
