@@ -64,7 +64,7 @@ class UserDetailView(generics.RetrieveAPIView[User]):
         :return: User.
         :raises NotFound: if the user doesn't exist.
         """
-        user_id = self.kwargs.get("id")
+        user_id = self.kwargs.get("pk")
 
         try:
             return User.objects.get(id=user_id, is_active=True)

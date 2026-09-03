@@ -1,5 +1,6 @@
 """Tests User views that require authentication."""
 
+import uuid
 from typing import Final
 
 import pytest
@@ -40,3 +41,34 @@ def test_update_user_profile(authenticated_client) -> None:
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["email"] == new_email
+
+
+def test_retrieve_user_by_id(api_client, create_user) -> None:
+    """Tests that an authenticated user can retrieve another user by id."""
+    user = create_user()
+    other = create_user()
+
+    url = reverse("users:user-detail", kwargs={"pk": user.id})
+    response = api_client(other).get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["id"] == str(user.id)
+    assert response.data["username"] == user.username
+
+
+def test_retrieve_unknown_user_by_id_fails(api_client, create_user) -> None:
+    """Tests that retrieving a user that doesn't exist returns a 404."""
+    url = reverse("users:user-detail", kwargs={"pk": uuid.uuid4()})
+    response = api_client(create_user()).get(url)
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_retrieve_inactive_user_by_id_fails(api_client, create_user) -> None:
+    """Tests that retrieving an inactive user returns a 404."""
+    inactive = create_user(is_active=False)
+
+    url = reverse("users:user-detail", kwargs={"pk": inactive.id})
+    response = api_client(create_user()).get(url)
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
